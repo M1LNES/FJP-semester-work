@@ -2,10 +2,59 @@ grammar Ligma;
 
 // === LEXER RULES ===
 
-NUMBER: [0-9]+;                       // Matches integers
-FLOAT: [0-9]+([.][0-9]*)?|[.][0-9]+;  // Matches floating-point numbers
-IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;   // Matches identifiers
-WHITESPACE: [ \t\r\n]+ -> skip;       // Matches whitespace and skips it
+// === KEYWORDS ===
+CONST: 'const';
+IF: 'if';
+ELSE: 'else';
+WHILE: 'while';
+FUNCTION: 'func';
+
+// === DATA TYPES ===
+BOOLEAN: 'boolean';
+INT: 'int';
+
+// === LITERALS AND IDENTIFIERS ===
+TRUE: 'true';
+FALSE: 'false';
+NUMBER: [0-9]+;
+FLOAT: [0-9]+([.][0-9]*)?|[.][0-9]+;
+IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
+COMMENT: '//' ~[\r\n]* -> skip;
+BLOCK_COMMENT: '/*' .*? '*/' -> skip;
+WHITESPACE: [ \t\r\n]+ -> skip;
+
+// === BRACKETS ===
+LPAREN: '(';
+RPAREN: ')';
+LBRACE: '{';
+RBRACE: '}';
+
+// === DELIMITERS ===
+SEMICOLON: ';';
+COMMA: ',';
+
+// === ASSIGNMENT OPERATORS ===
+ASSIGN: '=';
+
+// === ARITHMETIC OPERATORS ===
+ADD: '+';
+SUB: '-';
+MUL: '*';
+DIV: '/';
+POW: '^';
+
+// === RELATIONAL OPERATORS ===
+EQ: '==';
+NEQ: '!=';
+GT: '>';
+LT: '<';
+GTE: '>=';
+LTE: '<=';
+
+// === LOGICAL OPERATORS ===
+AND: '&&';
+OR: '||';
+NOT: '!';
 
 // === PARSER RULES ===
 
@@ -20,65 +69,68 @@ statement
     | expression
     | ifStatement
     | whileStatement
-    | procedureDefinition
-    | procedureCall
+    | functionDefinition
+    | functionCall
+    ;
+
+dataType
+    : INT
+    | BOOLEAN
     ;
 
 variableDefinition
-    : 'int' IDENTIFIER '=' expression ';'
+    : dataType IDENTIFIER ASSIGN expression SEMICOLON
     ;
 
 constantDefinition
-    : 'const' IDENTIFIER '=' NUMBER ';'
+    : CONST IDENTIFIER ASSIGN NUMBER SEMICOLON
     ;
 
 assignment
-    : IDENTIFIER '=' expression ';'
+    : IDENTIFIER ASSIGN expression SEMICOLON
     ;
 
 ifStatement
-    : 'if' '(' expression ')' '{' statement+ '}'
+    : IF LPAREN expression RPAREN LBRACE statement* RBRACE // (ELSE LBRACE statement* RBRACE)?
     ;
 
 whileStatement
-    : 'while' '(' expression ')' '{' statement+ '}'
+    : WHILE LPAREN expression RPAREN LBRACE statement* RBRACE
     ;
 
-procedureDefinition
-    : 'func' IDENTIFIER '(' parameterList? ')' '{' statement+ '}'
+functionDefinition
+    : FUNCTION IDENTIFIER LPAREN parameterList? RPAREN LBRACE statement* RBRACE
     ;
 
-procedureCall
-    : IDENTIFIER '(' argumentList? ')' ';'
+functionCall
+    : IDENTIFIER LPAREN argumentList? RPAREN SEMICOLON
     ;
 
 parameterList
-    : parameter (',' parameter)*
+    : parameter (COMMA parameter)*
     ;
 
 parameter
     : dataType IDENTIFIER
     ;
 
-dataType
-    : 'int'
-    ;
-
 argumentList
-    : expression (',' expression)*
+    : expression (COMMA expression)*
     ;
 
 // Expression with proper operator precedence
+// TODO: add support for function calls
 expression
-    : expression '^' expression
-    | '-' expression
-    | '+' expression
-    | '!' expression
-    | expression ('*' | '/') expression
-    | expression ('+' | '-') expression
-    | expression ('&&' | '||') expression
-    | expression ('==' | '!=' | '<' | '<=' | '>' | '>=') expression
-    | '(' expression ')'
-    | IDENTIFIER
-    | NUMBER
+    : expression POW expression                               # powerExpression
+    | SUB expression                                          # unaryMinusExpression
+    | ADD expression                                          # unaryPlusExpression
+    | NOT expression                                          # notExpression
+    | expression (MUL | DIV) expression                       # multiplicativeExpression
+    | expression (ADD | SUB) expression                       # additiveExpression
+    | expression (EQ | NEQ | GT | LT | GTE | LTE) expression  # comparisonExpression
+    | expression (AND | OR) expression                        # logicalExpression
+    | LPAREN expression RPAREN                                # parenthesizedExpression
+    | IDENTIFIER                                              # identifierExpression
+    | NUMBER                                                  # numberExpression
+    | (TRUE | FALSE)                                          # booleanExpression
     ;
