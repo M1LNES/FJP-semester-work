@@ -2,6 +2,7 @@
 .idea
 /ligma/.mvn
 /ligma/target
+/ligma/src/main/java/ligma/generated/*
 
 ### VSCode ###
 .vscode/*
