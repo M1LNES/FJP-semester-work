@@ -1,0 +1,9 @@
+int a = 5;
+boolean p = true;
+
+if (x > 1)
+{
+    x = x + 1;
+}
+
+int x = a > 5 && (x == true);
