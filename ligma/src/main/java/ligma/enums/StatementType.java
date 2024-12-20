@@ -7,6 +7,5 @@ public enum StatementType {
     EXPRESSION,
     IF_STATEMENT,
     WHILE_STATEMENT,
-    FUNCTION_DEFINITION,
     FUNCTION_CALL
 }

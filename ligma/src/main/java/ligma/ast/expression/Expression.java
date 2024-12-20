@@ -1,12 +1,16 @@
 package ligma.ast.expression;
 
 import ligma.enums.DataType;
+import lombok.Getter;
 
+@Getter
 public abstract class Expression {
-//    private DataType dataType; TODO: use Expression type
-    private int line;
 
-    protected Expression(int line) {
+    private final DataType type;
+    private final int line;
+
+    protected Expression(DataType type, int line) {
+        this.type = type;
         this.line = line;
     }
 
