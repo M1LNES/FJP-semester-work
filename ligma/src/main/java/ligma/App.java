@@ -1,19 +1,21 @@
 package ligma;
 
+import ligma.ast.Program;
 import ligma.generated.LigmaLexer;
 import ligma.generated.LigmaParser;
+import ligma.table.Descriptor;
+import ligma.table.Scope;
+import ligma.table.SymbolTable;
 import ligma.visitor.ProgramVisitor;
 import lombok.extern.java.Log;
-import lombok.extern.log4j.Log4j2;
-import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 @Log
 public class App {
@@ -36,7 +38,11 @@ public class App {
             LigmaParser.ProgramContext programContext = parser.program();
             ProgramVisitor programVisitor = new ProgramVisitor();
 
-            programVisitor.visit(programContext);
+            Program program = programVisitor.visit(programContext);
+
+            Map<String, Scope> symbolTable = SymbolTable.getScopes();
+
+            log.info("Semantic analysis has finished successfully");
         }
         catch (IOException exception)
         {

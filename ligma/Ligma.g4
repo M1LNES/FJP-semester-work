@@ -10,14 +10,14 @@ WHILE: 'while';
 FUNCTION: 'func';
 
 // === DATA TYPES ===
-BOOLEAN: 'boolean';
 INT: 'int';
+FLOAT: 'float';
+BOOLEAN: 'boolean';
 
 // === LITERALS AND IDENTIFIERS ===
-TRUE: 'true';
-FALSE: 'false';
-NUMBER: [0-9]+;
-FLOAT: [0-9]+([.][0-9]*)?|[.][0-9]+;
+BOOLEAN_LITERAL: 'true' | 'false';
+INTEGER_LITERAL: [0-9]+;
+FLOAT_LITERAL: [0-9]+([.][0-9]*)?|[.][0-9]+;
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
 COMMENT: '//' ~[\r\n]* -> skip;
 BLOCK_COMMENT: '/*' .*? '*/' -> skip;
@@ -59,7 +59,7 @@ NOT: '!';
 // === PARSER RULES ===
 
 program
-    : statement+ EOF
+    : statement* EOF
     ;
 
 statement
@@ -75,7 +75,14 @@ statement
 
 dataType
     : INT
+    | FLOAT
     | BOOLEAN
+    ;
+
+literal
+    : INTEGER_LITERAL
+    | FLOAT_LITERAL
+    | BOOLEAN_LITERAL
     ;
 
 variableDefinition
@@ -83,7 +90,7 @@ variableDefinition
     ;
 
 constantDefinition
-    : CONST IDENTIFIER ASSIGN NUMBER SEMICOLON
+    : CONST variableDefinition
     ;
 
 assignment
@@ -131,6 +138,5 @@ expression
     | expression (AND | OR) expression                        # logicalExpression
     | LPAREN expression RPAREN                                # parenthesizedExpression
     | IDENTIFIER                                              # identifierExpression
-    | NUMBER                                                  # numberExpression
-    | (TRUE | FALSE)                                          # booleanExpression
+    | literal                                                 # literalExpression
     ;
