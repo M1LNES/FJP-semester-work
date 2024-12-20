@@ -1,0 +1,4 @@
+float x = 5.0;
+float y = 5.0;
+
+boolean z = x && y;  // invalid

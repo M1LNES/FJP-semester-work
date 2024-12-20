@@ -23,19 +23,24 @@ public class Scope {
         this.level = (parent == null) ? 0 : parent.level + 1; // Level is parent's level + 1
     }
 
-    public boolean addDescriptor(String identifier, Descriptor descriptor) {
+    /// Add a descriptor for the specified identifier
+    public void addDescriptor(String identifier, Descriptor descriptor) {
         // Variable already exists in this scope
         if (descriptors.containsKey(identifier)) {
-            return false;
+            throw new IllegalArgumentException("Duplicate identifier: " + identifier);
         }
 
         descriptors.put(identifier, descriptor);
-
-        return true;
     }
 
+    /// Return descriptor for the identifier or null if not found
     public Descriptor getDescriptor(String identifier) {
-        return descriptors.get(identifier); // Returns null if not found
+        return descriptors.get(identifier);
+    }
+
+    /// Check if the identifier has a descriptor
+    public boolean hasDescriptor(String identifier) {
+        return descriptors.containsKey(identifier);
     }
 
 }

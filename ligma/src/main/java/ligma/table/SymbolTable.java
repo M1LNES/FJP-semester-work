@@ -1,7 +1,8 @@
 package ligma.table;
 
+import ligma.enums.ScopeType;
+import ligma.enums.StatementType;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +12,9 @@ public class SymbolTable {
     /// Persistent storage for all scopes
     @Getter
     private static final Map<String, Scope> scopes = new HashMap<>();
+    /// Counters for each type of scope
+    @Getter
+    private static final Map<String, Integer> scopeCounters = new HashMap<>();
     /// Active scope
     @Getter
     private static Scope currentScope = null;
@@ -18,8 +22,20 @@ public class SymbolTable {
     private SymbolTable() {
     }
 
+    /// Generate unique names for new scopes (useful for 'if', 'for', ..)
+    public static String generateScopeName(String scopeType) {
+        int count = scopeCounters.getOrDefault(scopeType, 0) + 1;
+        scopeCounters.put(scopeType, count);
+        return scopeType + "_" + count;
+    }
+
     /// Enter a new scope
     public static void enterScope(String scopeName) {
+        // The scope is anonymous -> add number suffix
+        if (ScopeType.isAnonymousScopeType(ScopeType.valueOf(scopeName))) {
+            scopeName = generateScopeName(scopeName);
+        }
+
         if (scopes.containsKey(scopeName)) {
             throw new IllegalArgumentException("Scope '" + scopeName + "' already exists.");
         }
@@ -39,12 +55,21 @@ public class SymbolTable {
     }
 
     /// Add a descriptor to the current scope
-    public static boolean add(String identifier, Descriptor descriptor) {
+    public static void add(String identifier, Descriptor descriptor) {
         if (currentScope == null) {
-            throw new IllegalStateException("No active scope to add the variable to.");
+            throw new IllegalStateException("No active scope to add the identifier to.");
         }
 
-        return currentScope.addDescriptor(identifier, descriptor);
+        currentScope.addDescriptor(identifier, descriptor);
+    }
+
+    /// Check whether the identifier exists in the current scope
+    public static boolean isIdentifierInCurrentScope(String identifier) {
+        if (currentScope == null) {
+            throw new IllegalStateException("No active scope to find the identifier in.");
+        }
+
+        return currentScope.hasDescriptor(identifier);
     }
 
     /// Lookup a variable in the current scope hierarchy

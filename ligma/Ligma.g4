@@ -41,6 +41,7 @@ ADD: '+';
 SUB: '-';
 MUL: '*';
 DIV: '/';
+MOD: '%';
 POW: '^';
 
 // === RELATIONAL OPERATORS ===
@@ -59,18 +60,28 @@ NOT: '!';
 // === PARSER RULES ===
 
 program
-    : statement* EOF
+    : (statement | functionDefinition)* EOF
     ;
 
 statement
     : variableDefinition
     | constantDefinition
     | assignment
-    | expression
     | ifStatement
     | whileStatement
-    | functionDefinition
     | functionCall
+    ;
+
+functionDefinition
+    : FUNCTION dataType IDENTIFIER LPAREN parameterList? RPAREN LBRACE statement* RBRACE
+    ;
+
+parameterList
+    : parameter (COMMA parameter)*
+    ;
+
+parameter
+    : dataType IDENTIFIER
     ;
 
 dataType
@@ -105,20 +116,8 @@ whileStatement
     : WHILE LPAREN expression RPAREN LBRACE statement* RBRACE
     ;
 
-functionDefinition
-    : FUNCTION IDENTIFIER LPAREN parameterList? RPAREN LBRACE statement* RBRACE
-    ;
-
 functionCall
     : IDENTIFIER LPAREN argumentList? RPAREN SEMICOLON
-    ;
-
-parameterList
-    : parameter (COMMA parameter)*
-    ;
-
-parameter
-    : dataType IDENTIFIER
     ;
 
 argumentList
@@ -128,15 +127,15 @@ argumentList
 // Expression with proper operator precedence
 // TODO: add support for function calls
 expression
-    : expression POW expression                               # powerExpression
-    | SUB expression                                          # unaryMinusExpression
-    | ADD expression                                          # unaryPlusExpression
-    | NOT expression                                          # notExpression
-    | expression (MUL | DIV) expression                       # multiplicativeExpression
-    | expression (ADD | SUB) expression                       # additiveExpression
-    | expression (EQ | NEQ | GT | LT | GTE | LTE) expression  # comparisonExpression
-    | expression (AND | OR) expression                        # logicalExpression
-    | LPAREN expression RPAREN                                # parenthesizedExpression
-    | IDENTIFIER                                              # identifierExpression
-    | literal                                                 # literalExpression
+    : expression POW expression                                  # powerExpression
+    | SUB expression                                             # unaryMinusExpression
+    | ADD expression                                             # unaryPlusExpression
+    | NOT expression                                             # notExpression
+    | expression op=(MUL | DIV | MOD) expression                 # multiplicativeExpression
+    | expression op=(ADD | SUB) expression                       # additiveExpression
+    | expression op=(EQ | NEQ | GT | LT | GTE | LTE) expression  # comparisonExpression
+    | expression op=(AND | OR) expression                        # logicalExpression
+    | LPAREN expression RPAREN                                   # parenthesizedExpression
+    | IDENTIFIER                                                 # identifierExpression
+    | literal                                                    # literalExpression
     ;

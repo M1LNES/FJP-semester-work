@@ -1,0 +1,4 @@
+float x = 5;
+boolean y = true;
+
+float z = x * y;  // invalid
