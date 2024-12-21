@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class ExpressionTestSemantic {
+class ExpressionSemanticTest {
 
     @BeforeEach
     void setUp() {
