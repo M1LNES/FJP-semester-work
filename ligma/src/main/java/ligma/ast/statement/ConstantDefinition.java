@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class VariableDefinition extends Statement {
+public class ConstantDefinition extends Statement {
 
     private final String identifier;
     private final Expression expression;

@@ -3,6 +3,7 @@ package ligma.visitor;
 import ligma.ast.expression.AdditiveExpression;
 import ligma.ast.expression.ComparisonExpression;
 import ligma.ast.expression.Expression;
+import ligma.ast.expression.FunctionCallExpression;
 import ligma.ast.expression.Identifier;
 import ligma.ast.expression.Literal;
 import ligma.ast.expression.LogicalExpression;
@@ -12,13 +13,18 @@ import ligma.ast.expression.ParenthesizedExpression;
 import ligma.ast.expression.PowerExpression;
 import ligma.ast.expression.UnaryMinusExpression;
 import ligma.ast.expression.UnaryPlusExpression;
+import ligma.ast.function.FunctionParameter;
 import ligma.enums.DataType;
 import ligma.enums.Operator;
 import ligma.generated.LigmaBaseVisitor;
 import ligma.generated.LigmaParser;
 import ligma.table.Descriptor;
+import ligma.table.FunctionDescriptor;
 import ligma.table.SymbolTable;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 public class ExpressionVisitor extends LigmaBaseVisitor<Expression> {
@@ -190,7 +196,7 @@ public class ExpressionVisitor extends LigmaBaseVisitor<Expression> {
             throw new RuntimeException("Identifier: " + identifier + " was not declared");
         }
 
-        return new Identifier(identifier, descriptor.type(), line);
+        return new Identifier(identifier, descriptor.getType(), line);
     }
 
     @Override
@@ -220,6 +226,53 @@ public class ExpressionVisitor extends LigmaBaseVisitor<Expression> {
         }
 
         return literal;
+    }
+
+    @Override
+    public Expression visitFunctionCallExpression(LigmaParser.FunctionCallExpressionContext ctx) {
+        log.debug("Function call expression: {}", ctx.getText());
+
+        String identifier = ctx.functionCall().IDENTIFIER().getText();
+        int line = ctx.getStart().getLine();
+
+        Descriptor descriptor = SymbolTable.lookup(identifier);
+
+        // Function doesn't exist
+        if (descriptor == null) {
+            throw new RuntimeException("Function " + identifier + " was not declared yet");
+        }
+        // Identifier is not a function
+        if (!(descriptor instanceof FunctionDescriptor funcDescriptor)) {
+            throw new RuntimeException(identifier + " is not a function");
+        }
+
+        List<Expression> arguments = new ArrayList<>();
+
+        for (LigmaParser.ExpressionContext expressionCtx : ctx.functionCall().argumentList().expression()) {
+            arguments.add(visit(expressionCtx));
+        }
+
+        // Argument count doesn't match the parameter count
+        if (funcDescriptor.getParameters().size() != arguments.size()) {
+            throw new RuntimeException(
+                "Function '" + identifier + "' needs " + funcDescriptor.getParameters().size() + " arguments" +
+                    " but " + arguments.size() + " was provided"
+            );
+        }
+
+        // Check that every argument type matches the parameter type
+        for (Expression argument : arguments) {
+            for (FunctionParameter parameter : funcDescriptor.getParameters()) {
+                if (argument.getType() != parameter.getType()) {
+                    throw new RuntimeException(
+                        "Argument type is " + argument.getType() +
+                            " but " + parameter.getType() + " was expected"
+                    );
+                }
+            }
+        }
+
+        return new FunctionCallExpression(descriptor.getType(), line, identifier, arguments);
     }
 
 }

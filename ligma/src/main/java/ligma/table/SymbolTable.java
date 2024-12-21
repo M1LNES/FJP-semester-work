@@ -1,12 +1,13 @@
 package ligma.table;
 
 import ligma.enums.ScopeType;
-import ligma.enums.StatementType;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 public class SymbolTable {
 
     /// Persistent storage for all scopes
@@ -32,13 +33,15 @@ public class SymbolTable {
     /// Enter a new scope
     public static void enterScope(String scopeName) {
         // The scope is anonymous -> add number suffix
-        if (ScopeType.isAnonymousScopeType(ScopeType.valueOf(scopeName))) {
+        if (ScopeType.isAnonymousScopeType(scopeName)) {
             scopeName = generateScopeName(scopeName);
         }
 
         if (scopes.containsKey(scopeName)) {
             throw new IllegalArgumentException("Scope '" + scopeName + "' already exists.");
         }
+
+        log.debug("Entering scope '{}'", scopeName);
 
         Scope newScope = new Scope(scopeName, currentScope); // Set parent to the current scope
         currentScope = newScope; // Update the current scope
@@ -50,6 +53,8 @@ public class SymbolTable {
         if (currentScope == null) {
             throw new IllegalStateException("Cannot exit scope: No active scope!");
         }
+
+        log.debug("Leaving scope '{}'", currentScope.getName());
 
         currentScope = currentScope.getParent(); // Move up to the parent scope
     }

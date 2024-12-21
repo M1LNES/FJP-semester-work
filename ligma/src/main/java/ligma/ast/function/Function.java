@@ -1,5 +1,15 @@
 package ligma.ast.function;
 
-public abstract class Function {
+import ligma.ast.statement.Statement;
+import ligma.enums.DataType;
+
+import java.util.List;
+
+public record Function(
+    String name,
+    DataType returnType,
+    List<FunctionParameter> parameters,
+    List<Statement> statements
+) {
 
 }

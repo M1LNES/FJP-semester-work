@@ -24,18 +24,20 @@ public class ProgramVisitor extends LigmaBaseVisitor<Program> {
 
         SymbolTable.enterScope(ScopeType.GLOBAL.name());
 
-        List<Statement> statements = new ArrayList<>();
         List<Function> functions = new ArrayList<>();
+        List<Statement> statements = new ArrayList<>();
+
+        // functions
+        for (LigmaParser.FunctionDefinitionContext functionContext : ctx.functionDefinition()) {
+            functions.add(functionVisitor.visit(functionContext));
+        }
 
         // statements
         for (LigmaParser.StatementContext statementContext : ctx.statement()) {
             statements.add(statementVisitor.visit(statementContext));
         }
 
-        // functions
-        for (LigmaParser.FunctionDefinitionContext functionContext : ctx.functionDefinition()) {
-            functions.add(functionVisitor.visit(functionContext));
-        }
+        SymbolTable.exitScope();
 
         return new Program(statements, functions);
     }

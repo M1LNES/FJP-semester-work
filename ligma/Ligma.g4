@@ -8,6 +8,7 @@ IF: 'if';
 ELSE: 'else';
 WHILE: 'while';
 FUNCTION: 'func';
+RETURN: 'return';
 
 // === DATA TYPES ===
 INT: 'int';
@@ -69,11 +70,15 @@ statement
     | assignment
     | ifStatement
     | whileStatement
-    | functionCall
+    | functionCall SEMICOLON
     ;
 
 functionDefinition
-    : FUNCTION dataType IDENTIFIER LPAREN parameterList? RPAREN LBRACE statement* RBRACE
+    : FUNCTION dataType IDENTIFIER LPAREN parameterList? RPAREN LBRACE functionBody RBRACE
+    ;
+
+functionBody
+    : statement* RETURN expression SEMICOLON
     ;
 
 parameterList
@@ -109,7 +114,11 @@ assignment
     ;
 
 ifStatement
-    : IF LPAREN expression RPAREN LBRACE statement* RBRACE // (ELSE LBRACE statement* RBRACE)?
+    : IF LPAREN expression RPAREN LBRACE ifElseBody RBRACE (ELSE LBRACE ifElseBody RBRACE)?
+    ;
+
+ifElseBody
+    : statement*
     ;
 
 whileStatement
@@ -117,7 +126,7 @@ whileStatement
     ;
 
 functionCall
-    : IDENTIFIER LPAREN argumentList? RPAREN SEMICOLON
+    : IDENTIFIER LPAREN argumentList? RPAREN
     ;
 
 argumentList
@@ -125,7 +134,6 @@ argumentList
     ;
 
 // Expression with proper operator precedence
-// TODO: add support for function calls
 expression
     : expression POW expression                                  # powerExpression
     | SUB expression                                             # unaryMinusExpression
@@ -138,4 +146,5 @@ expression
     | LPAREN expression RPAREN                                   # parenthesizedExpression
     | IDENTIFIER                                                 # identifierExpression
     | literal                                                    # literalExpression
+    | functionCall                                               # functionCallExpression
     ;

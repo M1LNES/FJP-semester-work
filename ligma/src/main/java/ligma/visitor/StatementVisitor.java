@@ -1,7 +1,9 @@
 package ligma.visitor;
 
 import ligma.ast.expression.Expression;
+import ligma.ast.function.FunctionParameter;
 import ligma.ast.statement.Assignment;
+import ligma.ast.statement.ConstantDefinition;
 import ligma.ast.statement.FunctionCall;
 import ligma.ast.statement.IfStatement;
 import ligma.ast.statement.Statement;
@@ -12,7 +14,9 @@ import ligma.enums.ScopeType;
 import ligma.generated.LigmaBaseVisitor;
 import ligma.generated.LigmaParser;
 import ligma.table.Descriptor;
+import ligma.table.FunctionDescriptor;
 import ligma.table.SymbolTable;
+import ligma.table.VariableDescriptor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -29,18 +33,27 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
         String identifier = ctx.IDENTIFIER().getText();
         log.debug("Variable definition: {} [type: {}, id: {}]", ctx.getText(), type, identifier);
 
-        // TODO: switch(type) and check if the "expression" dataType is compatible
+        // Redeclaration of the same identifier in the current scope
+        if (SymbolTable.isIdentifierInCurrentScope(identifier)) {
+            throw new RuntimeException("Variable '" + identifier + "' is already defined in the scope");
+        }
 
-        Descriptor descriptor = Descriptor.builder()
-                                          .name(identifier)
-                                          .type(DataType.getDataType(type))
-                                          .isConstant(false)
-                                          .scopeLevel(SymbolTable.getCurrentScope().getLevel())
-                                          .build();
+        DataType dataType = DataType.getDataType(type);
+        Expression expression = expressionVisitor.visit(ctx.expression());
+
+        // Type mismatch
+        if (dataType != expression.getType()) {
+            throw new RuntimeException("Variable '" + identifier + "' is not of type " + dataType);
+        }
+
+        Descriptor descriptor = VariableDescriptor.builder()
+                                                  .name(identifier)
+                                                  .type(dataType)
+                                                  .isConstant(false)
+                                                  .scopeLevel(SymbolTable.getCurrentScope().getLevel())
+                                                  .build();
 
         SymbolTable.add(identifier, descriptor);
-
-        Expression expression = expressionVisitor.visit(ctx.expression());
 
         return new VariableDefinition(identifier, expression);
     }
@@ -51,32 +64,58 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
         String identifier = ctx.variableDefinition().IDENTIFIER().getText();
         log.debug("Constant definition: {} [type: {}, id: {}]", ctx.getText(), type, identifier);
 
-        // TODO: switch(type) and check if the "expression" dataType is compatible
+        // Redeclaration of the same identifier in the current scope
+        if (SymbolTable.isIdentifierInCurrentScope(identifier)) {
+            throw new RuntimeException("Variable '" + identifier + "' is already defined in the scope");
+        }
 
-        Descriptor descriptor = Descriptor.builder()
-                                          .name(identifier)
-                                          .type(DataType.getDataType(type))
-                                          .isConstant(true)
-                                          .scopeLevel(SymbolTable.getCurrentScope().getLevel())
-                                          .build();
+        DataType dataType = DataType.getDataType(type);
+        Expression expression = expressionVisitor.visit(ctx.variableDefinition().expression());
+
+        // Type mismatch
+        if (dataType != expression.getType()) {
+            throw new RuntimeException("Variable '" + identifier + "' is not of type " + dataType);
+        }
+
+        Descriptor descriptor = VariableDescriptor.builder()
+                                                  .name(identifier)
+                                                  .type(DataType.getDataType(type))
+                                                  .isConstant(true)
+                                                  .scopeLevel(SymbolTable.getCurrentScope().getLevel())
+                                                  .build();
 
         SymbolTable.add(identifier, descriptor);
 
-        Expression expression = expressionVisitor.visit(ctx.variableDefinition().expression());
-
-        return new VariableDefinition(identifier, expression);
+        return new ConstantDefinition(identifier, expression);
     }
 
     @Override
     public Statement visitAssignment(LigmaParser.AssignmentContext ctx) {
         log.debug("Assignment: {}", ctx.getText());
         String identifier = ctx.IDENTIFIER().getText();
+        Descriptor descriptor = SymbolTable.lookup(identifier);
 
-        if (SymbolTable.lookup(identifier) == null) {
+        // Identifier was not found in the traversed scopes
+        if (descriptor == null) {
             throw new RuntimeException("Variable " + identifier + " was not declared yet");
         }
 
+        // Reassigment to constant is not allowed
+        if (descriptor instanceof VariableDescriptor varDesc && varDesc.isConstant()) {
+            throw new RuntimeException("Cannot assign new value to constant");
+        }
+
+        // Cannot assign value to a function
+        if (descriptor instanceof FunctionDescriptor) {
+            throw new RuntimeException("Cannot assign new value to a function");
+        }
+
         Expression expression = expressionVisitor.visit(ctx.expression());
+
+        // Type mismatch
+        if (descriptor.getType() != expression.getType()) {
+            throw new RuntimeException("Variable '" + identifier + "' is not of type " + expression.getType());
+        }
 
         return new Assignment(identifier, expression);
     }
@@ -88,15 +127,36 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
         SymbolTable.enterScope(ScopeType.IF.name());
 
         Expression expression = expressionVisitor.visit(ctx.expression());
-        List<Statement> statements = new ArrayList<>();
 
-        for (LigmaParser.StatementContext statementCtx : ctx.statement()) {
-            statements.add(visit(statementCtx));
+        // Expression must be of type boolean
+        if (!DataType.isBooleanType(expression.getType())) {
+            throw new RuntimeException("Condition must be a boolean type");
+        }
+
+        // Traverse statements in the 'if' body
+        List<Statement> ifStatements = new ArrayList<>();
+        for (LigmaParser.StatementContext statementCtx : ctx.ifElseBody(0).statement()) {
+            ifStatements.add(visit(statementCtx));
         }
 
         SymbolTable.exitScope();
 
-        return new IfStatement(expression, statements);
+        // 'else' is not present
+        if (ctx.ELSE() == null) {
+            return new IfStatement(expression, ifStatements, null);
+        }
+
+        SymbolTable.enterScope(ScopeType.ELSE.name());
+
+        // Traverse statements in the 'else' body
+        List<Statement> elseStatements = new ArrayList<>();
+        for (LigmaParser.StatementContext statementCtx : ctx.ifElseBody(1).statement()) {
+            elseStatements.add(visit(statementCtx));
+        }
+
+        SymbolTable.exitScope();
+
+        return new IfStatement(expression, ifStatements, elseStatements);
     }
 
     @Override
@@ -105,11 +165,16 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
 
         SymbolTable.enterScope(ScopeType.WHILE.name());
 
-        // TODO: expression must be of type boolean (if false -> skip arguments)
-
         Expression expression = expressionVisitor.visit(ctx.expression());
+
+        // Expression must be of type boolean
+        if (!DataType.isBooleanType(expression.getType())) {
+            throw new RuntimeException("Condition must be a boolean type");
+        }
+
         List<Statement> statements = new ArrayList<>();
 
+        // Traverse statements in the body
         for (LigmaParser.StatementContext statementCtx : ctx.statement()) {
             statements.add(visit(statementCtx));
         }
@@ -121,7 +186,7 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
 
     @Override
     public Statement visitFunctionCall(LigmaParser.FunctionCallContext ctx) {
-        log.debug("Function call: {}", ctx.getText());
+        log.debug("Function call statement: {}", ctx.getText());
 
         String identifier = ctx.IDENTIFIER().getText();
 
@@ -132,7 +197,7 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
             throw new RuntimeException("Function " + identifier + " was not declared yet");
         }
         // Identifier is not a function
-        if (!descriptor.isFunction()) {
+        if (!(descriptor instanceof FunctionDescriptor funcDescriptor)) {
             throw new RuntimeException(identifier + " is not a function");
         }
 
@@ -142,10 +207,25 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
             arguments.add(expressionVisitor.visit(expressionCtx));
         }
 
-        // TODO: check that number of arguments match the number of parameters in the function definition
-        // TODO: check argument type mismatch
-        // TODO: check return type mismatch
-        // TODO: check incorrect order of arguments
+        // Argument count doesn't match the parameter count
+        if (funcDescriptor.getParameters().size() != arguments.size()) {
+            throw new RuntimeException(
+                "Function '" + identifier + "' needs " + funcDescriptor.getParameters().size() + " arguments" +
+                " but " + arguments.size() + " was provided"
+            );
+        }
+
+        // Check that every argument type matches the parameter type
+        for (Expression argument : arguments) {
+            for (FunctionParameter parameter : funcDescriptor.getParameters()) {
+                if (argument.getType() != parameter.getType()) {
+                    throw new RuntimeException(
+                        "Argument type is " + argument.getType() +
+                        " but " + parameter.getType() + " was expected"
+                    );
+                }
+            }
+        }
 
         return new FunctionCall(identifier, arguments);
     }
