@@ -9,6 +9,8 @@ import java.util.List;
 public class IfStatement extends Statement {
 
     private final Expression expression;
-    private final List<Statement> statements;
+    private final List<Statement> ifStatements;
+    /// null -> if statement doesn't have 'else'
+    private final List<Statement> elseStatements;
 
 }
