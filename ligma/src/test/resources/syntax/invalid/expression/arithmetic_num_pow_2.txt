@@ -1,0 +1,4 @@
+float a = 2.5;
+float b = 5.6868;
+
+int c = a ^^ b;

@@ -1,0 +1,6 @@
+boolean a = true;
+
+whole(a)
+{
+a= !a;
+}

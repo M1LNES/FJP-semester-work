@@ -1,0 +1,4 @@
+float a = 50.24101;
+float b = 5.2562;
+
+float c = a %% b;

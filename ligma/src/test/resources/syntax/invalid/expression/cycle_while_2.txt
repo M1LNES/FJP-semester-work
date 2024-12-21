@@ -1,0 +1,5 @@
+boolean a = true;
+
+while (a)
+{
+a= !a;

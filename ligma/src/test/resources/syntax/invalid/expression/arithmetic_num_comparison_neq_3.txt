@@ -1,0 +1,4 @@
+boolean a = true;
+boolean b = false;
+
+boolean neq1 =  !=a  b;
