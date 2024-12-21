@@ -16,7 +16,7 @@ public enum DataType {
     public static DataType getDataType(String dataType) {
         try {
             return DataType.valueOf(dataType.toUpperCase());
-        } catch (IllegalArgumentException _) {
+        } catch (IllegalArgumentException ignored) {
             throw new RuntimeException("Invalid data type: " + dataType);
         }
     }
