@@ -1,0 +1,5 @@
+int a = 10;
+int b = 20;
+
+boolean gt1 = a > b;
+boolean gt2 = 20 > 10;

@@ -1,0 +1,5 @@
+float a = 50.24101;
+float b = 5.2562;
+
+float c = a % b;
+float d = 66.5555 % 2.1111;

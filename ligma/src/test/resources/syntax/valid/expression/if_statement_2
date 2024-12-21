@@ -1,0 +1,5 @@
+boolean isSkibidi = true;
+
+if (!isSkibidi) {
+   isSkibidi = !isSkibidi;
+}
