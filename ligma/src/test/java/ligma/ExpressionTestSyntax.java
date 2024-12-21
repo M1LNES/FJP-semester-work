@@ -43,9 +43,6 @@ class ExpressionTestSyntax {
 
         LigmaParser.ProgramContext programContext = parser.program();
 
-        ProgramVisitor programVisitor = new ProgramVisitor();
-        programVisitor.visit(programContext);
-
         inputStream.close();
     }
 
@@ -70,13 +67,11 @@ class ExpressionTestSyntax {
                 .doesNotThrowAnyException();
     }
 
-    // TODO Create test files for invalid scenarios
-    /*
     @ParameterizedTest(name = "Invalid file: {0}")
     @MethodSource("invalidFiles")
     void invalidFilesShouldThrowExceptions(String fileName, String resourcePath) {
         assertThatThrownBy(() -> runSyntaxAnalysis(resourcePath))
                 .isInstanceOf(RuntimeException.class);
-    }*/
+    }
 
 }

@@ -1,0 +1,4 @@
+float a = 10.55;
+float b = 0.5888;
+
+boolean gt1 = a >> b;

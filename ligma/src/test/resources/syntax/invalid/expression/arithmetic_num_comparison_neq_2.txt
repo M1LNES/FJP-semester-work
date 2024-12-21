@@ -1,0 +1,4 @@
+float a = 10.1641;
+float b = 20.154514;
+
+boolean neq1 =  != b;

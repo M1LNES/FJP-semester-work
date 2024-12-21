@@ -1,0 +1,4 @@
+float a = 10.01;
+float b = 20.19;
+
+boolean eq1 = a = b;
