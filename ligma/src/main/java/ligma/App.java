@@ -3,6 +3,7 @@ package ligma;
 import ligma.ast.program.Program;
 import ligma.generated.LigmaLexer;
 import ligma.generated.LigmaParser;
+import ligma.listener.EnhancedLigmaLexer;
 import ligma.listener.SyntaxErrorListener;
 import ligma.table.Scope;
 import ligma.table.SymbolTable;
@@ -32,7 +33,7 @@ public class App {
             log.info("Successfully opened file: {}", filename);
 
             CharStream charStream = CharStreams.fromStream(input);
-            LigmaLexer ligmaLexer = new LigmaLexer(charStream);
+            LigmaLexer ligmaLexer = new EnhancedLigmaLexer(charStream);
             CommonTokenStream tokenStream = new CommonTokenStream(ligmaLexer);
             LigmaParser parser = new LigmaParser(tokenStream);
 

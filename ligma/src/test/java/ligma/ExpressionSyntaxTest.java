@@ -4,7 +4,6 @@ import ligma.generated.LigmaLexer;
 import ligma.generated.LigmaParser;
 import ligma.listener.SyntaxErrorListener;
 import ligma.table.SymbolTable;
-import ligma.visitor.ProgramVisitor;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -23,7 +22,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class ExpressionTestSyntax {
+class ExpressionSyntaxTest {
 
     @BeforeEach
     void setUp() {
@@ -41,7 +40,7 @@ class ExpressionTestSyntax {
         SyntaxErrorListener syntaxErrorListener = new SyntaxErrorListener();
         parser.addErrorListener(syntaxErrorListener);
 
-        LigmaParser.ProgramContext programContext = parser.program();
+        parser.program();
 
         inputStream.close();
     }
