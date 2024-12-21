@@ -1,0 +1,2 @@
+const boolean isDisabled = !true;
+const boolean isEnabled = !false;

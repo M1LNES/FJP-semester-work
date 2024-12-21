@@ -23,14 +23,14 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class ExpressionTest {
+class ExpressionTestSyntax {
 
     @BeforeEach
     void setUp() {
         SymbolTable.getScopes().clear();
     }
 
-    private void runSemanticAnalysis(String resourcePath) throws IOException {
+    private void runSyntaxAnalysis(String resourcePath) throws IOException {
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(resourcePath);
         CharStream charStream = CharStreams.fromStream(Objects.requireNonNull(inputStream));
         LigmaLexer lexer = new LigmaLexer(charStream);
@@ -52,29 +52,31 @@ class ExpressionTest {
     private static Stream<Arguments> loadFiles(String resourceFolder) {
         File folder = Path.of("src/test/resources", resourceFolder).toFile();
         return Stream.of(Objects.requireNonNull(folder.listFiles()))
-                     .map(file -> Arguments.of(file.getName(), resourceFolder + "/" + file.getName()));
+                .map(file -> Arguments.of(file.getName(), resourceFolder + "/" + file.getName()));
     }
 
     static Stream<Arguments> validFiles() {
-        return loadFiles("valid/expression");
+        return loadFiles("syntax/valid/expression");
     }
 
     static Stream<Arguments> invalidFiles() {
-        return loadFiles("invalid/expression");
+        return loadFiles("syntax/invalid/expression");
     }
 
     @ParameterizedTest(name = "Valid file: {0}")
     @MethodSource("validFiles")
     void validFilesShouldNotThrowExceptions(String fileName, String resourcePath) {
-        assertThatCode(() -> runSemanticAnalysis(resourcePath))
-            .doesNotThrowAnyException();
+        assertThatCode(() -> runSyntaxAnalysis(resourcePath))
+                .doesNotThrowAnyException();
     }
 
+    // TODO Create test files for invalid scenarios
+    /*
     @ParameterizedTest(name = "Invalid file: {0}")
     @MethodSource("invalidFiles")
     void invalidFilesShouldThrowExceptions(String fileName, String resourcePath) {
-        assertThatThrownBy(() -> runSemanticAnalysis(resourcePath))
-            .isInstanceOf(RuntimeException.class);
-    }
+        assertThatThrownBy(() -> runSyntaxAnalysis(resourcePath))
+                .isInstanceOf(RuntimeException.class);
+    }*/
 
 }

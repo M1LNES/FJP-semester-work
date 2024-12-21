@@ -1,0 +1,2 @@
+boolean t1 = !true;
+boolean f1 = !false;

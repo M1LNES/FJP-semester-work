@@ -1,0 +1,5 @@
+int a = 10;
+int b = 20;
+
+boolean smaller = a < b;
+boolean smaller2 = 20 < 10;

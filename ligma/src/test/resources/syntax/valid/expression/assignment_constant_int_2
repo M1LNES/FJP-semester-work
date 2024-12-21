@@ -1,0 +1,2 @@
+const int jedna = 0001;
+const int dva = -0002;

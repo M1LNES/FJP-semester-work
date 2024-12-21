@@ -1,0 +1,5 @@
+float a = 0.5894515;
+float b = 59.97889;
+
+boolean smaller = a < b;
+boolean smaller2 = 20.0504 < 10.948478;

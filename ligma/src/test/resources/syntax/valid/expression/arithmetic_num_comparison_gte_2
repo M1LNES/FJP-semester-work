@@ -1,0 +1,5 @@
+float a = 0.5888;
+float b = 9.555;
+
+boolean gte1 = a >= b;
+boolean gte2 = 0.588 >= 9.6;
