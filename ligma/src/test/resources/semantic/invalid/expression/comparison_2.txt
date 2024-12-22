@@ -1,4 +1,4 @@
-float x = 5.0;
+int x = 5;
 boolean y = true;
 
-boolean z = x == y;  // invalid
+boolean z = x > y;  // invalid

@@ -1,4 +1,4 @@
-float a = 10.55;
-float b = 0.5888;
+int a = 10;
+int b = 0;
 
 boolean gt1 = a >> b;

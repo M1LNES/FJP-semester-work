@@ -1,16 +1,12 @@
 package ligma;
 
-import ligma.exception.SemanticException;
+import ligma.exception.LexicalException;
 import ligma.generated.LigmaLexer;
 import ligma.generated.LigmaParser;
 import ligma.listener.EnhancedLigmaLexer;
-import ligma.listener.SyntaxErrorListener;
-import ligma.table.SymbolTable;
-import ligma.visitor.ProgramVisitor;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -22,31 +18,18 @@ import java.nio.file.Path;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class ExpressionSemanticTest {
+public class ExpressionLexicalTest {
 
-    @BeforeEach
-    void setUp() {
-        SymbolTable.getScopes().clear();
-    }
-
-    private void runSemanticAnalysis(String resourcePath) throws IOException {
+    private void runLexicalAnalysis(String resourcePath) throws IOException {
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(resourcePath);
         CharStream charStream = CharStreams.fromStream(Objects.requireNonNull(inputStream));
         LigmaLexer lexer = new EnhancedLigmaLexer(charStream);
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         LigmaParser parser = new LigmaParser(tokenStream);
 
-        // Add syntax error listener
-        SyntaxErrorListener syntaxErrorListener = new SyntaxErrorListener();
-        parser.addErrorListener(syntaxErrorListener);
-
-        LigmaParser.ProgramContext programContext = parser.program();
-
-        ProgramVisitor programVisitor = new ProgramVisitor();
-        programVisitor.visit(programContext);
+        parser.program();
 
         inputStream.close();
     }
@@ -57,26 +40,15 @@ class ExpressionSemanticTest {
                      .map(file -> Arguments.of(file.getName(), resourceFolder + "/" + file.getName()));
     }
 
-    static Stream<Arguments> validFiles() {
-        return loadFiles("semantic/valid/expression");
-    }
-
     static Stream<Arguments> invalidFiles() {
-        return loadFiles("semantic/invalid/expression");
-    }
-
-    @ParameterizedTest(name = "Valid file: {0}")
-    @MethodSource("validFiles")
-    void validFilesShouldNotThrowExceptions(String fileName, String resourcePath) {
-        assertThatCode(() -> runSemanticAnalysis(resourcePath))
-            .doesNotThrowAnyException();
+        return loadFiles("lexical/invalid/expression");
     }
 
     @ParameterizedTest(name = "Invalid file: {0}")
     @MethodSource("invalidFiles")
     void invalidFilesShouldThrowExceptions(String fileName, String resourcePath) {
-        assertThatThrownBy(() -> runSemanticAnalysis(resourcePath))
-            .isInstanceOf(SemanticException.class);
+        assertThatThrownBy(() -> runLexicalAnalysis(resourcePath))
+            .isInstanceOf(LexicalException.class);
     }
 
 }

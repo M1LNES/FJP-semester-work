@@ -1,7 +1,9 @@
 package ligma;
 
+import ligma.exception.SyntaxException;
 import ligma.generated.LigmaLexer;
 import ligma.generated.LigmaParser;
+import ligma.listener.EnhancedLigmaLexer;
 import ligma.listener.SyntaxErrorListener;
 import ligma.table.SymbolTable;
 import org.antlr.v4.runtime.CharStream;
@@ -24,15 +26,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ExpressionSyntaxTest {
 
-    @BeforeEach
-    void setUp() {
-        SymbolTable.getScopes().clear();
-    }
-
     private void runSyntaxAnalysis(String resourcePath) throws IOException {
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(resourcePath);
         CharStream charStream = CharStreams.fromStream(Objects.requireNonNull(inputStream));
-        LigmaLexer lexer = new LigmaLexer(charStream);
+        LigmaLexer lexer = new EnhancedLigmaLexer(charStream);
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         LigmaParser parser = new LigmaParser(tokenStream);
 
@@ -70,7 +67,7 @@ class ExpressionSyntaxTest {
     @MethodSource("invalidFiles")
     void invalidFilesShouldThrowExceptions(String fileName, String resourcePath) {
         assertThatThrownBy(() -> runSyntaxAnalysis(resourcePath))
-                .isInstanceOf(RuntimeException.class);
+                .isInstanceOf(SyntaxException.class);
     }
 
 }

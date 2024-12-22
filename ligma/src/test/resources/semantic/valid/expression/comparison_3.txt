@@ -1,4 +1,4 @@
-boolean x = true;
-boolean y = true;
+int x = 6;
+int y = 5;
 
-boolean z = x == y;  // valid
+boolean z = x > y;  // valid
