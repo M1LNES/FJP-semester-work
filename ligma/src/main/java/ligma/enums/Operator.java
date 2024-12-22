@@ -1,5 +1,6 @@
 package ligma.enums;
 
+import ligma.exception.SemanticException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -35,6 +36,6 @@ public enum Operator {
                 return op;
             }
         }
-        throw new IllegalArgumentException("Unknown operator: " + symbol);
+        throw new SemanticException("Unknown operator: " + symbol);
     }
 }

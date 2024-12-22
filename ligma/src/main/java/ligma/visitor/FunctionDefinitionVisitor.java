@@ -5,6 +5,7 @@ import ligma.ast.function.Function;
 import ligma.ast.function.FunctionParameter;
 import ligma.ast.statement.Statement;
 import ligma.enums.DataType;
+import ligma.exception.SemanticException;
 import ligma.generated.LigmaBaseVisitor;
 import ligma.generated.LigmaParser;
 import ligma.table.Descriptor;
@@ -69,7 +70,7 @@ public class FunctionDefinitionVisitor extends LigmaBaseVisitor<Function> {
 
         // Function's return type doesn't match the expression type
         if (returnExpr.getType() != returnType) {
-            throw new RuntimeException(
+            throw new SemanticException(
                 "Function's return type is: " + type +
                 ", but the provided type was: " + returnExpr.getType().name().toLowerCase()
             );

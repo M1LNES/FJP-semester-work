@@ -1,7 +1,7 @@
 package ligma.listener;
 
+import ligma.exception.LexicalException;
 import ligma.generated.LigmaLexer;
-import lombok.extern.log4j.Log4j;
 import lombok.extern.slf4j.Slf4j;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.LexerNoViableAltException;
@@ -23,7 +23,7 @@ public class EnhancedLigmaLexer extends LigmaLexer {
         String message = "Lexical error at line " + getLine() + ", column " + getCharPositionInLine() + ": unexpected character '" + errorText + "'";
         log.error(message);
 
-        throw new RuntimeException(message);
+        throw new LexicalException(message);
     }
 
 }

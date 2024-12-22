@@ -4,13 +4,17 @@ import ligma.ast.expression.Expression;
 import ligma.ast.function.FunctionParameter;
 import ligma.ast.statement.Assignment;
 import ligma.ast.statement.ConstantDefinition;
+import ligma.ast.statement.DoWhileLoop;
+import ligma.ast.statement.ForLoop;
 import ligma.ast.statement.FunctionCall;
 import ligma.ast.statement.IfStatement;
+import ligma.ast.statement.RepeatUntilLoop;
 import ligma.ast.statement.Statement;
 import ligma.ast.statement.VariableDefinition;
-import ligma.ast.statement.WhileStatement;
+import ligma.ast.statement.WhileLoop;
 import ligma.enums.DataType;
 import ligma.enums.ScopeType;
+import ligma.exception.SemanticException;
 import ligma.generated.LigmaBaseVisitor;
 import ligma.generated.LigmaParser;
 import ligma.table.Descriptor;
@@ -35,7 +39,7 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
 
         // Redeclaration of the same identifier in the current scope
         if (SymbolTable.isIdentifierInCurrentScope(identifier)) {
-            throw new RuntimeException("Variable '" + identifier + "' is already defined in the scope");
+            throw new SemanticException("Variable '" + identifier + "' is already defined in the scope");
         }
 
         DataType dataType = DataType.getDataType(type);
@@ -43,9 +47,10 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
 
         // Type mismatch
         if (dataType != expression.getType()) {
-            throw new RuntimeException("Variable '" + identifier + "' is not of type " + dataType);
+            throw new SemanticException("Variable '" + identifier + "' is not of type " + dataType);
         }
 
+        // Add identifier with descriptor to the Symbol Table
         Descriptor descriptor = VariableDescriptor.builder()
                                                   .name(identifier)
                                                   .type(dataType)
@@ -66,7 +71,7 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
 
         // Redeclaration of the same identifier in the current scope
         if (SymbolTable.isIdentifierInCurrentScope(identifier)) {
-            throw new RuntimeException("Variable '" + identifier + "' is already defined in the scope");
+            throw new SemanticException("Variable '" + identifier + "' is already defined in the scope");
         }
 
         DataType dataType = DataType.getDataType(type);
@@ -74,9 +79,10 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
 
         // Type mismatch
         if (dataType != expression.getType()) {
-            throw new RuntimeException("Variable '" + identifier + "' is not of type " + dataType);
+            throw new SemanticException("Variable '" + identifier + "' is not of type " + dataType);
         }
 
+        // Add identifier with descriptor to the Symbol Table
         Descriptor descriptor = VariableDescriptor.builder()
                                                   .name(identifier)
                                                   .type(DataType.getDataType(type))
@@ -92,32 +98,43 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
     @Override
     public Statement visitAssignment(LigmaParser.AssignmentContext ctx) {
         log.debug("Assignment: {}", ctx.getText());
-        String identifier = ctx.IDENTIFIER().getText();
-        Descriptor descriptor = SymbolTable.lookup(identifier);
-
-        // Identifier was not found in the traversed scopes
-        if (descriptor == null) {
-            throw new RuntimeException("Variable " + identifier + " was not declared yet");
-        }
-
-        // Reassigment to constant is not allowed
-        if (descriptor instanceof VariableDescriptor varDesc && varDesc.isConstant()) {
-            throw new RuntimeException("Cannot assign new value to constant");
-        }
-
-        // Cannot assign value to a function
-        if (descriptor instanceof FunctionDescriptor) {
-            throw new RuntimeException("Cannot assign new value to a function");
-        }
-
+        String firstIdentifier = ctx.IDENTIFIER().getText();
         Expression expression = expressionVisitor.visit(ctx.expression());
 
-        // Type mismatch
-        if (descriptor.getType() != expression.getType()) {
-            throw new RuntimeException("Variable '" + identifier + "' is not of type " + expression.getType());
+        // Traverse all chained identifiers
+        List<String> chainedIdentifiers = new ArrayList<>();
+        for (LigmaParser.ChainedAssignmentContext chainedAssignmentCtx : ctx.chainedAssignment()) {
+            chainedIdentifiers.add(chainedAssignmentCtx.IDENTIFIER().getText());
         }
 
-        return new Assignment(identifier, expression);
+        // All identifiers in the assigment
+        List<String> allIdentifiers = new ArrayList<>();
+        allIdentifiers.add(firstIdentifier);
+        allIdentifiers.addAll(chainedIdentifiers);
+
+        // Loop throush every identifier in the assignment
+        for (String iden : allIdentifiers) {
+            Descriptor descriptor = SymbolTable.lookup(iden);
+
+            switch (descriptor) {
+                // Reassigment to constant is not allowed
+                case VariableDescriptor varDesc when varDesc.isConstant() ->
+                    throw new SemanticException("Cannot assign new value to constant '" + varDesc.getName() + "'");
+                // Cannot assign value to a function
+                case FunctionDescriptor funcDesc ->
+                    throw new SemanticException("Cannot assign new value to a function '" + funcDesc.getName() + "'");
+                // Identifier was not found in the traversed scopes
+                case null -> throw new SemanticException("Variable " + iden + " was not declared yet");
+                default -> {
+                    // Type mismatch
+                    if (descriptor.getType() != expression.getType()) {
+                        throw new SemanticException("Variable '" + iden + "' is not of type " + expression.getType());
+                    }
+                }
+            }
+        }
+
+        return new Assignment(allIdentifiers, expression);
     }
 
     @Override
@@ -129,8 +146,8 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
         Expression expression = expressionVisitor.visit(ctx.expression());
 
         // Expression must be of type boolean
-        if (!DataType.isBooleanType(expression.getType())) {
-            throw new RuntimeException("Condition must be a boolean type");
+        if (expression.getType() != DataType.BOOLEAN) {
+            throw new SemanticException("Condition must be a boolean type");
         }
 
         // Traverse statements in the 'if' body
@@ -160,16 +177,57 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
     }
 
     @Override
-    public Statement visitWhileStatement(LigmaParser.WhileStatementContext ctx) {
-        log.debug("While statement: {}", ctx.getText());
+    public Statement visitForLoop(LigmaParser.ForLoopContext ctx) {
+        log.debug("For loop: {}", ctx.getText());
+
+        SymbolTable.enterScope(ScopeType.FOR.name());
+
+        String identifier = ctx.IDENTIFIER().getText();
+
+        // Add identifier with descriptor to the Symbol Table
+        Descriptor descriptor = VariableDescriptor.builder()
+                                                  .name(identifier)
+                                                  .type(DataType.INT)
+                                                  .isConstant(false)
+                                                  .scopeLevel(SymbolTable.getCurrentScope().getLevel())
+                                                  .build();
+
+        SymbolTable.add(identifier, descriptor);
+
+        Expression expression = expressionVisitor.visit(ctx.expression(0));
+        Expression toExpression = expressionVisitor.visit(ctx.expression(1));
+
+        // For loop initialization expression must be of type int
+        if (expression.getType() != DataType.INT) {
+            throw new SemanticException("For loop initialization expression must be of type int");
+        }
+        // For loop range must be of type int
+        if (toExpression.getType() != DataType.INT) {
+            throw new SemanticException("For loop range must be of type int");
+        }
+
+        // Traverse statements in the for loop body
+        List<Statement> statements = new ArrayList<>();
+        for (LigmaParser.StatementContext statementCtx : ctx.statement()) {
+            statements.add(visit(statementCtx));
+        }
+
+        SymbolTable.exitScope();
+
+        return new ForLoop(identifier, expression, toExpression, statements);
+    }
+
+    @Override
+    public Statement visitWhileLoop(LigmaParser.WhileLoopContext ctx) {
+        log.debug("While loop: {}", ctx.getText());
 
         SymbolTable.enterScope(ScopeType.WHILE.name());
 
         Expression expression = expressionVisitor.visit(ctx.expression());
 
         // Expression must be of type boolean
-        if (!DataType.isBooleanType(expression.getType())) {
-            throw new RuntimeException("Condition must be a boolean type");
+        if (expression.getType() != DataType.BOOLEAN) {
+            throw new SemanticException("Condition must be a boolean type");
         }
 
         List<Statement> statements = new ArrayList<>();
@@ -181,7 +239,55 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
 
         SymbolTable.exitScope();
 
-        return new WhileStatement(expression, statements);
+        return new WhileLoop(expression, statements);
+    }
+
+    @Override
+    public Statement visitDoWhileLoop(LigmaParser.DoWhileLoopContext ctx) {
+        log.debug("Do-while loop: {}", ctx.getText());
+
+        SymbolTable.enterScope(ScopeType.DO_WHILE.name());
+
+        // Traverse statements in the body
+        List<Statement> statements = new ArrayList<>();
+        for (LigmaParser.StatementContext statementCtx : ctx.statement()) {
+            statements.add(visit(statementCtx));
+        }
+
+        Expression expression = expressionVisitor.visit(ctx.expression());
+
+        // Expression must be of type boolean
+        if (expression.getType() != DataType.BOOLEAN) {
+            throw new SemanticException("Condition must be a boolean type");
+        }
+
+        SymbolTable.exitScope();
+
+        return new DoWhileLoop(statements, expression);
+    }
+
+    @Override
+    public Statement visitRepeatUntilLoop(LigmaParser.RepeatUntilLoopContext ctx) {
+        log.debug("Repeat-until loop: {}", ctx.getText());
+
+        SymbolTable.enterScope(ScopeType.REPEAT_UNTIL.name());
+
+        // Traverse statements in the body
+        List<Statement> statements = new ArrayList<>();
+        for (LigmaParser.StatementContext statementCtx : ctx.statement()) {
+            statements.add(visit(statementCtx));
+        }
+
+        Expression expression = expressionVisitor.visit(ctx.expression());
+
+        // Expression must be of type boolean
+        if (expression.getType() != DataType.BOOLEAN) {
+            throw new SemanticException("Condition must be a boolean type");
+        }
+
+        SymbolTable.exitScope();
+
+        return new RepeatUntilLoop(statements, expression);
     }
 
     @Override
@@ -189,41 +295,42 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
         log.debug("Function call statement: {}", ctx.getText());
 
         String identifier = ctx.IDENTIFIER().getText();
+        int line = ctx.getStart().getLine();
 
         Descriptor descriptor = SymbolTable.lookup(identifier);
 
         // Function doesn't exist
         if (descriptor == null) {
-            throw new RuntimeException("Function " + identifier + " was not declared yet");
+            throw new SemanticException("Function " + identifier + " was not declared yet");
         }
         // Identifier is not a function
         if (!(descriptor instanceof FunctionDescriptor funcDescriptor)) {
-            throw new RuntimeException(identifier + " is not a function");
+            throw new SemanticException(identifier + " is not a function");
         }
 
+        List<FunctionParameter> parameters = funcDescriptor.getParameters();
         List<Expression> arguments = new ArrayList<>();
 
+        // Traverse arguments
         for (LigmaParser.ExpressionContext expressionCtx : ctx.argumentList().expression()) {
             arguments.add(expressionVisitor.visit(expressionCtx));
         }
 
         // Argument count doesn't match the parameter count
-        if (funcDescriptor.getParameters().size() != arguments.size()) {
-            throw new RuntimeException(
-                "Function '" + identifier + "' needs " + funcDescriptor.getParameters().size() + " arguments" +
-                " but " + arguments.size() + " was provided"
+        if (arguments.size() != parameters.size()) {
+            throw new SemanticException(
+                "Function '" + identifier + "' needs " + parameters.size() + " arguments" +
+                    " but " + arguments.size() + " was provided"
             );
         }
 
         // Check that every argument type matches the parameter type
-        for (Expression argument : arguments) {
-            for (FunctionParameter parameter : funcDescriptor.getParameters()) {
-                if (argument.getType() != parameter.getType()) {
-                    throw new RuntimeException(
-                        "Argument type is " + argument.getType() +
-                        " but " + parameter.getType() + " was expected"
-                    );
-                }
+        for (int i = 0; i < arguments.size(); i++) {
+            if (arguments.get(i).getType() != parameters.get(i).type()) {
+                throw new SemanticException(
+                    "Argument type is " + arguments.get(i).getType() +
+                        " but " + parameters.get(i).type() + " was expected"
+                );
             }
         }
 
