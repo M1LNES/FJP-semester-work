@@ -1,1 +1,18 @@
-boolean a = true &&& false;
+func int x(int i, int j)
+{
+    int les = 5;
+
+    if (les < 10)
+    {
+        int var = 3;
+        les = les + var;
+    }
+    else
+    {
+        int var = 5;
+    }
+
+    int var = 5 + 5;
+
+    return 5;
+}

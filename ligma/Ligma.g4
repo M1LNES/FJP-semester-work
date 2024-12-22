@@ -6,19 +6,22 @@ grammar Ligma;
 CONST: 'const';
 IF: 'if';
 ELSE: 'else';
+FOR: 'for';
+TO: 'to';
 WHILE: 'while';
+DO: 'do';
+REPEAT: 'repeat';
+UNTIL: 'until';
 FUNCTION: 'func';
 RETURN: 'return';
 
 // === DATA TYPES ===
 INT: 'int';
-FLOAT: 'float';
 BOOLEAN: 'boolean';
 
 // === LITERALS AND IDENTIFIERS ===
 BOOLEAN_LITERAL: 'true' | 'false';
 INTEGER_LITERAL: [0-9]+;
-FLOAT_LITERAL: [0-9]+([.][0-9]*)?|[.][0-9]+;
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
 COMMENT: '//' ~[\r\n]* -> skip;
 BLOCK_COMMENT: '/*' .*? '*/' -> skip;
@@ -69,7 +72,10 @@ statement
     | constantDefinition
     | assignment
     | ifStatement
-    | whileStatement
+    | forLoop
+    | whileLoop
+    | doWhileLoop
+    | repeatUntilLoop
     | functionCall SEMICOLON
     ;
 
@@ -91,13 +97,11 @@ parameter
 
 dataType
     : INT
-    | FLOAT
     | BOOLEAN
     ;
 
 literal
     : INTEGER_LITERAL
-    | FLOAT_LITERAL
     | BOOLEAN_LITERAL
     ;
 
@@ -110,7 +114,11 @@ constantDefinition
     ;
 
 assignment
-    : IDENTIFIER ASSIGN expression SEMICOLON
+    : IDENTIFIER chainedAssignment* ASSIGN expression SEMICOLON
+    ;
+
+chainedAssignment
+    : ASSIGN IDENTIFIER
     ;
 
 ifStatement
@@ -121,8 +129,20 @@ ifElseBody
     : statement*
     ;
 
-whileStatement
+forLoop
+    : FOR LPAREN INT IDENTIFIER ASSIGN expression TO expression RPAREN LBRACE statement* RBRACE
+    ;
+
+whileLoop
     : WHILE LPAREN expression RPAREN LBRACE statement* RBRACE
+    ;
+
+doWhileLoop
+    : DO LBRACE statement* RBRACE WHILE LPAREN expression RPAREN SEMICOLON
+    ;
+
+repeatUntilLoop
+    : REPEAT LBRACE statement* RBRACE UNTIL LPAREN expression RPAREN SEMICOLON
     ;
 
 functionCall
