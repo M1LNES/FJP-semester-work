@@ -1,4 +1,4 @@
-float x = 5.0;
-float y = 5.0;
+boolean x = true;
+boolean y = true;
 
 boolean z = x == y;  // valid

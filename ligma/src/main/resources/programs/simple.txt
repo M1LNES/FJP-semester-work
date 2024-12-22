@@ -1,18 +1,15 @@
-func int x(int i, int j)
-{
-    int les = 5;
-
-    if (les < 10)
-    {
-        int var = 3;
-        les = les + var;
-    }
-    else
-    {
-        int var = 5;
-    }
-
-    int var = 5 + 5;
-
-    return 5;
+for (int i = 0 to 10) {
+    int l = 5;
 }
+
+while (1 < 5) {
+    int l = 5;
+}
+
+do {
+    int l = 5;
+} while(1 < 2);
+
+repeat {
+    int l = 2;
+} until (1 < 2);

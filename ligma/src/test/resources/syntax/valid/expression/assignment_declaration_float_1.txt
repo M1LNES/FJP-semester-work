@@ -1,2 +1,0 @@
-float floatPositive = 69.56415;
-float floatNegative = -0.1851515514514;

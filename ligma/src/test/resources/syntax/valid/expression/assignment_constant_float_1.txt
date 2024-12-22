@@ -1,2 +1,0 @@
-const float floatPositive = 69.56415;
-const float floatNegative = -0.1851515514514;

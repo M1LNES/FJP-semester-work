@@ -1,4 +1,0 @@
-float x = 5.0;
-boolean y = true;
-
-int z = x ^ y;  // invalid

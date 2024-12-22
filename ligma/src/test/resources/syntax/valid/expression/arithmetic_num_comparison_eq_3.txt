@@ -1,5 +1,0 @@
-boolean a = true;
-boolean b = false;
-
-boolean eq1 = a == b;
-boolean eq2 = false == true;

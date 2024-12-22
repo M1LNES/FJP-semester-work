@@ -1,4 +1,4 @@
-float a = 10.01;
-float b = 20.19;
+int a = 10;
+int b = 20;
 
 boolean eq1 = a = b;

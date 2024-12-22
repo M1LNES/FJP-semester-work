@@ -8,11 +8,9 @@ import java.util.List;
 
 @Getter
 @RequiredArgsConstructor
-public class Assignment extends Statement {
+public class RepeatUntilLoop extends Statement {
 
-    /// All identifiers that appear in the assigment.
-    /// The first identifier is always present.
-    private final List<String> allIdentifiers;
+    private final List<Statement> statements;
     private final Expression expression;
 
 }

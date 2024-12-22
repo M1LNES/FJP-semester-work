@@ -1,4 +1,0 @@
-int x = 5;
-boolean y = true;
-
-boolean z = x <= y;  // invalid

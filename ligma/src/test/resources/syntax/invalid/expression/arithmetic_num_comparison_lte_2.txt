@@ -1,4 +1,4 @@
-float a = 5.6584588;
-float b = 5814.5555;
+int a = 5;
+int b = 5814;
 
 boolean lte1 =  <=a b;

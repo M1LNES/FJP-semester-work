@@ -1,5 +1,0 @@
-float a = 2.5;
-float b = 5.6868;
-
-int c = a ^ b;
-int d = 3.024 ^ 3.04504;

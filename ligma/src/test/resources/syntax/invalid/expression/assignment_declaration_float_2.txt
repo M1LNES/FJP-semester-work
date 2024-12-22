@@ -1,1 +1,0 @@
-float floatPositive = 16.5555gyat;

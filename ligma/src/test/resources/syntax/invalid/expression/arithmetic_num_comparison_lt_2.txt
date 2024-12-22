@@ -1,4 +1,4 @@
-float a = 0.5894515;
-float b = 59.97889;
+int a = 0;
+int b = 59;
 
 boolean smaller =  <a b;

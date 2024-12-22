@@ -16,6 +16,7 @@ import ligma.ast.expression.UnaryPlusExpression;
 import ligma.ast.function.FunctionParameter;
 import ligma.enums.DataType;
 import ligma.enums.Operator;
+import ligma.exception.SemanticException;
 import ligma.generated.LigmaBaseVisitor;
 import ligma.generated.LigmaParser;
 import ligma.table.Descriptor;
@@ -32,66 +33,59 @@ public class ExpressionVisitor extends LigmaBaseVisitor<Expression> {
     @Override
     public Expression visitPowerExpression(LigmaParser.PowerExpressionContext ctx) {
         log.debug("Power expression: {}", ctx.getText());
-        Operator operator = Operator.POW;
         Expression left = visit(ctx.expression(0));
         Expression right = visit(ctx.expression(1));
 
-        DataType finalExprType = DataType.getResultingNumericDataType(
-            left.getType(), right.getType()
-        );
         int line = ctx.getStart().getLine();
 
-        return new PowerExpression(operator, left, right, finalExprType, line);
+        if (left.getType() != DataType.INT || right.getType() != DataType.INT) {
+            throw new SemanticException("Cannot apply the 'pow' operation to non-int type");
+        }
+
+        return new PowerExpression(Operator.POW, left, right, DataType.INT, line);
     }
 
     @Override
     public Expression visitUnaryMinusExpression(LigmaParser.UnaryMinusExpressionContext ctx) {
         log.debug("Unary minus expression: {}", ctx.getText());
-        Operator operator = Operator.SUB;
         Expression expression = visit(ctx.expression());
 
-        DataType expressionType = expression.getType();
         int line = ctx.getStart().getLine();
 
-        if (!DataType.isNumericType(expressionType)) {
-            throw new RuntimeException("Unsupported expression type: " + expressionType);
+        if (expression.getType() != DataType.INT) {
+            throw new SemanticException("Cannot apply the 'unary minus' operation to non-int type");
         }
 
-        // Unary minus doesnt change the type -> keep expression type
-        return new UnaryMinusExpression(operator, expression, expressionType, line);
+        return new UnaryMinusExpression(Operator.SUB, expression, DataType.INT, line);
     }
 
     @Override
     public Expression visitUnaryPlusExpression(LigmaParser.UnaryPlusExpressionContext ctx) {
         log.debug("Unary plus expression: {}", ctx.getText());
-        Operator operator = Operator.ADD;
         Expression expression = visit(ctx.expression());
 
-        DataType expressionType = expression.getType();
         int line = ctx.getStart().getLine();
 
-        if (!DataType.isNumericType(expressionType)) {
-            throw new RuntimeException("Unsupported expression type: " + expressionType);
+        if (expression.getType() != DataType.INT) {
+            throw new SemanticException("Cannot apply the 'unary plus' operation to non-int type");
         }
 
-        // Unary plus doesnt change the type -> keep expression type
-        return new UnaryPlusExpression(operator, expression, expressionType, line);
+        return new UnaryPlusExpression(Operator.ADD, expression, DataType.INT, line);
     }
 
     @Override
     public Expression visitNotExpression(LigmaParser.NotExpressionContext ctx) {
         log.debug("Not expression: {}", ctx.getText());
-        Operator operator = Operator.NOT;
         Expression expression = visit(ctx.expression());
 
         DataType expressionType = expression.getType();
         int line = ctx.getStart().getLine();
 
-        if (!DataType.isBooleanType(expressionType)) {
-            throw new RuntimeException("Cannot negate non-boolean type: " + expressionType);
+        if (expressionType != DataType.BOOLEAN) {
+            throw new SemanticException("Cannot negate non-boolean type: " + expressionType);
         }
 
-        return new NotExpression(operator, expression, expressionType, line);
+        return new NotExpression(Operator.NOT, expression, expressionType, line);
     }
 
     @Override
@@ -101,12 +95,13 @@ public class ExpressionVisitor extends LigmaBaseVisitor<Expression> {
         Expression left = visit(ctx.expression(0));
         Expression right = visit(ctx.expression(1));
 
-        DataType finalExprType = DataType.getResultingNumericDataType(
-            left.getType(), right.getType()
-        );
         int line = ctx.getStart().getLine();
 
-        return new MultiplicativeExpression(operator, left, right, finalExprType, line);
+        if (left.getType() != DataType.INT || right.getType() != DataType.INT) {
+            throw new SemanticException("Cannot apply the '" + operator.getSymbol() + "' operation to non-int type");
+        }
+
+        return new MultiplicativeExpression(operator, left, right, DataType.INT, line);
     }
 
     @Override
@@ -116,12 +111,13 @@ public class ExpressionVisitor extends LigmaBaseVisitor<Expression> {
         Expression left = visit(ctx.expression(0));
         Expression right = visit(ctx.expression(1));
 
-        DataType finalExprType = DataType.getResultingNumericDataType(
-            left.getType(), right.getType()
-        );
         int line = ctx.getStart().getLine();
 
-        return new AdditiveExpression(operator, left, right, finalExprType, line);
+        if (left.getType() != DataType.INT || right.getType() != DataType.INT) {
+            throw new SemanticException("Cannot apply the '" + operator.getSymbol() + "' operation to non-int type");
+        }
+
+        return new AdditiveExpression(operator, left, right, DataType.INT, line);
     }
 
     @Override
@@ -131,11 +127,13 @@ public class ExpressionVisitor extends LigmaBaseVisitor<Expression> {
         Expression left = visit(ctx.expression(0));
         Expression right = visit(ctx.expression(1));
 
+        int line = ctx.getStart().getLine();
+
         // ==, !*
         if (operator == Operator.EQ || operator == Operator.NEQ) {
             // Both expressions need to be of the same data type
             if (!left.getType().equals(right.getType())) {
-                throw new RuntimeException(
+                throw new SemanticException(
                     "Cannot evaluate comparison: " + operator.getSymbol() +
                     " for non-matching types [" + left.getType() + ", " + right.getType() + "]"
                 );
@@ -143,17 +141,14 @@ public class ExpressionVisitor extends LigmaBaseVisitor<Expression> {
         }
         // >, <, >=, <=
         else {
-            // Both expressions need to be of numeric data type
-            if (!DataType.isNumericType(left.getType()) || !DataType.isNumericType(right.getType())) {
-                throw new RuntimeException("Cannot apply the operation to non-numeric type");
+            // Both expressions need to be int
+            if (left.getType() != DataType.INT || right.getType() != DataType.INT) {
+                throw new SemanticException("Cannot apply the operation to non-int type");
             }
         }
 
         // Data type of the comparison expression is always boolean
-        DataType finalExprType = DataType.BOOLEAN;
-        int line = ctx.getStart().getLine();
-
-        return new ComparisonExpression(operator, left, right, finalExprType, line);
+        return new ComparisonExpression(operator, left, right, DataType.BOOLEAN, line);
     }
 
     @Override
@@ -163,16 +158,15 @@ public class ExpressionVisitor extends LigmaBaseVisitor<Expression> {
         Expression left = visit(ctx.expression(0));
         Expression right = visit(ctx.expression(1));
 
+        int line = ctx.getStart().getLine();
+
         // Both expressions must be of type boolean
-        if (!DataType.isBooleanType(left.getType()) || !DataType.isBooleanType(right.getType())) {
-            throw new RuntimeException("Cannot evaluate logical expression with non-boolean types");
+        if (left.getType() != DataType.BOOLEAN || right.getType() != DataType.BOOLEAN) {
+            throw new SemanticException("Cannot evaluate logical expression with non-boolean types");
         }
 
         // Data type of the logical expression is always boolean
-        DataType finalExprType = DataType.BOOLEAN;
-        int line = ctx.getStart().getLine();
-
-        return new LogicalExpression(operator, left, right, finalExprType, line);
+        return new LogicalExpression(operator, left, right, DataType.BOOLEAN, line);
     }
 
     @Override
@@ -193,7 +187,7 @@ public class ExpressionVisitor extends LigmaBaseVisitor<Expression> {
         Descriptor descriptor = SymbolTable.lookup(identifier);
 
         if (descriptor == null) {
-            throw new RuntimeException("Identifier: " + identifier + " was not declared");
+            throw new SemanticException("Identifier: " + identifier + " was not declared");
         }
 
         return new Identifier(identifier, descriptor.getType(), line);
@@ -203,26 +197,19 @@ public class ExpressionVisitor extends LigmaBaseVisitor<Expression> {
     public Expression visitLiteralExpression(LigmaParser.LiteralExpressionContext ctx) {
         log.debug("Literal expression: {}", ctx.getText());
         LigmaParser.LiteralContext literalCtx = ctx.literal();
-        Literal<?> literal = null;
         int line = ctx.getStart().getLine();
+
+        Literal<?> literal = null;
 
         // int
         if (literalCtx.INTEGER_LITERAL() != null) {
             Integer value = Integer.parseInt(literalCtx.INTEGER_LITERAL().getText());
             literal = new Literal<>(value, DataType.INT, line);
         }
-        // float
-        else if (literalCtx.FLOAT_LITERAL() != null) {
-            Float value = Float.parseFloat(literalCtx.FLOAT_LITERAL().getText());
-            literal = new Literal<>(value, DataType.FLOAT, line);
-        }
         // boolean
         else if (literalCtx.BOOLEAN_LITERAL() != null) {
             Boolean value = Boolean.parseBoolean(literalCtx.BOOLEAN_LITERAL().getText());
             literal = new Literal<>(value, DataType.BOOLEAN, line);
-        }
-        else {
-            throw new RuntimeException("Invalid literal: " + ctx.getText());
         }
 
         return literal;
@@ -239,36 +226,36 @@ public class ExpressionVisitor extends LigmaBaseVisitor<Expression> {
 
         // Function doesn't exist
         if (descriptor == null) {
-            throw new RuntimeException("Function " + identifier + " was not declared yet");
+            throw new SemanticException("Function " + identifier + " was not declared yet");
         }
         // Identifier is not a function
         if (!(descriptor instanceof FunctionDescriptor funcDescriptor)) {
-            throw new RuntimeException(identifier + " is not a function");
+            throw new SemanticException(identifier + " is not a function");
         }
 
+        List<FunctionParameter> parameters = funcDescriptor.getParameters();
         List<Expression> arguments = new ArrayList<>();
 
+        // Traverse arguments
         for (LigmaParser.ExpressionContext expressionCtx : ctx.functionCall().argumentList().expression()) {
             arguments.add(visit(expressionCtx));
         }
 
         // Argument count doesn't match the parameter count
-        if (funcDescriptor.getParameters().size() != arguments.size()) {
-            throw new RuntimeException(
-                "Function '" + identifier + "' needs " + funcDescriptor.getParameters().size() + " arguments" +
+        if (arguments.size() != parameters.size()) {
+            throw new SemanticException(
+                "Function '" + identifier + "' needs " + parameters.size() + " arguments" +
                     " but " + arguments.size() + " was provided"
             );
         }
 
         // Check that every argument type matches the parameter type
-        for (Expression argument : arguments) {
-            for (FunctionParameter parameter : funcDescriptor.getParameters()) {
-                if (argument.getType() != parameter.getType()) {
-                    throw new RuntimeException(
-                        "Argument type is " + argument.getType() +
-                            " but " + parameter.getType() + " was expected"
-                    );
-                }
+        for (int i = 0; i < arguments.size(); i++) {
+            if (arguments.get(i).getType() != parameters.get(i).type()) {
+                throw new SemanticException(
+                    "Argument type is " + arguments.get(i).getType() +
+                        " but " + parameters.get(i).type() + " was expected"
+                );
             }
         }
 

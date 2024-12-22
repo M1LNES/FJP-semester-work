@@ -1,1 +1,0 @@
-float floatPositive == 69.56415;

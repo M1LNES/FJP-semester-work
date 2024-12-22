@@ -1,4 +1,4 @@
-float a = 0.5888;
-float b = 9.555;
+int a = 0;
+int b = 9;
 
 boolean gte1 =  >= b;
