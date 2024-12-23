@@ -4,11 +4,14 @@ import ligma.ast.expression.Expression;
 import ligma.ast.statement.Assignment;
 import ligma.ast.statement.ConstantDefinition;
 import ligma.ast.statement.DoWhileLoop;
+import ligma.ast.statement.ForLoop;
+import ligma.ast.statement.FunctionCall;
 import ligma.ast.statement.IfStatement;
 import ligma.ast.statement.RepeatUntilLoop;
 import ligma.ast.statement.Statement;
 import ligma.ast.statement.VariableDefinition;
 import ligma.ast.statement.WhileLoop;
+import ligma.enums.DataType;
 import ligma.enums.Instruction;
 import ligma.exception.GenerateException;
 import ligma.table.Descriptor;
@@ -37,6 +40,7 @@ public class StatementGenerator extends Generator {
                 case WhileLoop whileLoop -> generateWhile(whileLoop);
                 case DoWhileLoop doWhileLoop -> generateDoWhile(doWhileLoop);
                 case RepeatUntilLoop repeatUntilLoop -> generateRepeatUntil(repeatUntilLoop);
+                case FunctionCall functionCall -> generateFunctionCall(functionCall);
                 default -> {}
             }
         }
