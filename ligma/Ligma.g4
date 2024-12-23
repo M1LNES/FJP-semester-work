@@ -64,7 +64,7 @@ NOT: '!';
 // === PARSER RULES ===
 
 program
-    : (statement | functionDefinition)* EOF
+    : statement+ functionDefinition* EOF
     ;
 
 statement

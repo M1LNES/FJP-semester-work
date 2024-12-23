@@ -10,9 +10,9 @@ import ligma.ast.expression.LogicalExpression;
 import ligma.ast.expression.MultiplicativeExpression;
 import ligma.ast.expression.NotExpression;
 import ligma.ast.expression.ParenthesizedExpression;
+import ligma.ast.expression.PowerExpression;
 import ligma.ast.expression.UnaryMinusExpression;
 import ligma.ast.expression.UnaryPlusExpression;
-import ligma.ast.statement.FunctionCall;
 import ligma.enums.Instruction;
 import ligma.enums.Operator;
 import ligma.exception.GenerateException;
@@ -24,11 +24,14 @@ import java.util.List;
 @Setter
 public class ExpressionGenerator extends Generator {
 
+    private static final FunctionGenerator functionGenerator = new FunctionGenerator();
+
     private Expression expression;
 
     @Override
     public void generate() {
         switch (expression) {
+            case PowerExpression powerExpression -> generatePowerExpression(powerExpression);
             case UnaryMinusExpression unaryMinusExpression -> genUnaryMinusExpression(unaryMinusExpression);
             case UnaryPlusExpression unaryPlusExpression -> {} // Nothing needed
             case NotExpression notExpression -> genNotExpression(notExpression);
@@ -42,6 +45,84 @@ public class ExpressionGenerator extends Generator {
             case FunctionCallExpression functionCallExpression -> generateFunctionCallExpression(functionCallExpression);
             default -> {}
         }
+    }
+
+    private void generatePowerExpression(PowerExpression powerExpression) {
+        Expression left = powerExpression.getLeft();
+        Expression right = powerExpression.getRight();
+
+        addInstruction(Instruction.INT, 0, 4);
+
+        // Initialize result to 1 (push 1 to stack)
+        addInstruction(Instruction.LIT, 0, 1);
+
+        int resultAddress = symbolTable.getNextAddress();
+        addInstruction(Instruction.STO, 0, resultAddress);
+
+        // Base
+        // Generate left expression
+        expression = left;
+        generate();
+
+        int baseAddress = symbolTable.getNextAddress();
+        addInstruction(Instruction.STO, 0, baseAddress);
+
+        // Exponent
+        // Generate right expression
+        expression = right;
+        generate();
+
+        int exponentAddress = symbolTable.getNextAddress();
+        addInstruction(Instruction.STO, 0, exponentAddress);
+
+        // Exponent as counter
+        // Generate right expression
+        expression = right;
+        generate();
+
+        // Save counter to the stack
+        int counterAddress = symbolTable.getNextAddress();
+        addInstruction(Instruction.STO, 0, counterAddress);
+
+        int loopStart = getCurrentInstructionRow();
+
+        addInstruction(Instruction.LOD, 0, counterAddress);
+
+        // Test if counter != 0
+        addInstruction(Instruction.LIT, 0, 0);
+        addInstruction(Instruction.OPR, 0, 9);
+
+        // Jump to the end of the power expression
+        addInstruction(Instruction.JMC, 0, -1);
+
+        int jmcIndex = getCurrentInstructionRow();
+
+        addInstruction(Instruction.LOD, 0, resultAddress);
+        addInstruction(Instruction.LOD, 0, baseAddress);
+
+        // Multiply top two values (result * base)
+        addInstruction(Instruction.OPR, 0, 4);
+
+        addInstruction(Instruction.STO, 0, resultAddress);
+
+        // Subtract 1 from counter
+        addInstruction(Instruction.LOD, 0, counterAddress);
+        addInstruction(Instruction.LIT, 0, 1);
+        addInstruction(Instruction.OPR, 0, 3);
+
+        addInstruction(Instruction.STO, 0, counterAddress);
+
+        // Jump back to loop
+        addInstruction(Instruction.JMP, 0, loopStart + 1);
+
+        int loopEnd = getCurrentInstructionRow();
+
+        modifyInstructionAddress(jmcIndex, loopEnd + 1);
+
+        // Clean the result of JMC, base and exponent
+        addInstruction(Instruction.INT, 0, -3);
+
+        symbolTable.decrementCurrentScopeNextAddress(3);
     }
 
     private void genUnaryMinusExpression(UnaryMinusExpression unaryMinusExpression) {
@@ -298,8 +379,9 @@ public class ExpressionGenerator extends Generator {
         Descriptor descriptor = symbolTable.lookup(idenName);
 
         // TODO: Level is always 0 or 1 (0 = global scope level, 1 = funtion scope level)
+        // TODO: Level is calculated from 0, each depth (scope) that i need to traverse increments the level by 1
 
-        addInstruction(Instruction.LOD, 0, descriptor.getAddres());
+        addInstruction(Instruction.LOD, symbolTable.getLevel(descriptor), descriptor.getAddres());
     }
 
     private void generateLiteral(Literal<?> literal) {
@@ -311,25 +393,8 @@ public class ExpressionGenerator extends Generator {
     }
 
     private void generateFunctionCallExpression(FunctionCallExpression functionCall) {
-        String identifier = functionCall.getIdentifier();
-        List<Expression> arguments = functionCall.getArguments();
-
-        Descriptor functionDescriptor = symbolTable.lookup(identifier);
-
-        // Allocate space for the return value
-        addInstruction(Instruction.INT, 0, 1);
-
-        // Generate arguments
-        for (Expression argument : arguments) {
-            setExpression(argument);
-            generate();
-        }
-
-        // Call the function
-        addInstruction(Instruction.CAL, functionDescriptor.getScopeLevel(), functionDescriptor.getAddres());
-
-        // Clear the arguments from the stack
-        addInstruction(Instruction.INT, 0, arguments.size());
+        functionGenerator.setFunctionCall(functionCall);
+        functionGenerator.generate();
     }
 
 }

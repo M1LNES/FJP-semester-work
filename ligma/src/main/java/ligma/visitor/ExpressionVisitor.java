@@ -225,15 +225,15 @@ public class ExpressionVisitor extends LigmaBaseVisitor<Expression> {
         Descriptor descriptor = SymbolTable.lookup(identifier);
 
         // Function doesn't exist
-        if (descriptor == null) {
-            throw new SemanticException("Function " + identifier + " was not declared yet");
-        }
-        // Identifier is not a function
-        if (!(descriptor instanceof FunctionDescriptor funcDescriptor)) {
-            throw new SemanticException(identifier + " is not a function");
-        }
-
-        List<FunctionParameter> parameters = funcDescriptor.getParameters();
+//        if (descriptor == null) {
+//            throw new SemanticException("Function " + identifier + " was not declared yet");
+//        }
+//        // Identifier is not a function
+//        if (!(descriptor instanceof FunctionDescriptor funcDescriptor)) {
+//            throw new SemanticException(identifier + " is not a function");
+//        }
+//
+//        List<FunctionParameter> parameters = funcDescriptor.getParameters();
         List<Expression> arguments = new ArrayList<>();
 
         // Traverse arguments
@@ -242,24 +242,24 @@ public class ExpressionVisitor extends LigmaBaseVisitor<Expression> {
         }
 
         // Argument count doesn't match the parameter count
-        if (arguments.size() != parameters.size()) {
-            throw new SemanticException(
-                "Function '" + identifier + "' needs " + parameters.size() + " arguments" +
-                    " but " + arguments.size() + " was provided"
-            );
-        }
+//        if (arguments.size() != parameters.size()) {
+//            throw new SemanticException(
+//                "Function '" + identifier + "' needs " + parameters.size() + " arguments" +
+//                    " but " + arguments.size() + " was provided"
+//            );
+//        }
+//
+//        // Check that every argument type matches the parameter type
+//        for (int i = 0; i < arguments.size(); i++) {
+//            if (arguments.get(i).getType() != parameters.get(i).type()) {
+//                throw new SemanticException(
+//                    "Argument type is " + arguments.get(i).getType() +
+//                        " but " + parameters.get(i).type() + " was expected"
+//                );
+//            }
+//        }
 
-        // Check that every argument type matches the parameter type
-        for (int i = 0; i < arguments.size(); i++) {
-            if (arguments.get(i).getType() != parameters.get(i).type()) {
-                throw new SemanticException(
-                    "Argument type is " + arguments.get(i).getType() +
-                        " but " + parameters.get(i).type() + " was expected"
-                );
-            }
-        }
-
-        return new FunctionCallExpression(descriptor.getType(), line, identifier, arguments);
+        return new FunctionCallExpression(DataType.INT, line, identifier, arguments);
     }
 
 }

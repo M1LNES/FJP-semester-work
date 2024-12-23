@@ -26,12 +26,8 @@ public class ProgramGenerator extends Generator {
         List<Statement> statements = program.getStatements();
         List<Function> functions = program.getFunctions();
 
-        // Generate functions
-        FunctionGenerator functionGenerator = new FunctionGenerator();
-        functionGenerator.setFunctions(functions);
-        functionGenerator.generate();
-
-        Generator.writeInstructions();
+        // Set functions so that they can be called
+        Generator.setFunctions(functions);
 
         // Generate statements
         StatementGenerator statementGenerator = new StatementGenerator();
