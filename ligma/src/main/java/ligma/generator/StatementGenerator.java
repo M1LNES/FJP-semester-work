@@ -1,6 +1,7 @@
 package ligma.generator;
 
 import ligma.ast.expression.Expression;
+import ligma.ast.function.Function;
 import ligma.ast.statement.Assignment;
 import ligma.ast.statement.ConstantDefinition;
 import ligma.ast.statement.DoWhileLoop;
@@ -23,7 +24,8 @@ import java.util.List;
 @Setter
 public class StatementGenerator extends Generator {
 
-    private static ExpressionGenerator expressionGenerator = new ExpressionGenerator();
+    private static final ExpressionGenerator expressionGenerator = new ExpressionGenerator();
+    private static final FunctionGenerator functionGenerator = new FunctionGenerator();
 
     private List<Statement> statements;
 
@@ -71,7 +73,7 @@ public class StatementGenerator extends Generator {
         expressionGenerator.generate();
 
         // Save the result of the expression to the allocated space
-        addInstruction(Instruction.STO, 0, descriptor.getAddres());
+        addInstruction(Instruction.STO, symbolTable.getLevel(descriptor), descriptor.getAddres());
     }
 
     private void generateConstantDefinition(ConstantDefinition constDef) {
@@ -114,7 +116,7 @@ public class StatementGenerator extends Generator {
             Descriptor descriptor = symbolTable.lookup(allIdentifiers.get(i));
 
             // Store the value of the expression to the given identifier
-            addInstruction(Instruction.STO, 0, descriptor.getAddres());
+            addInstruction(Instruction.STO, symbolTable.getLevel(descriptor), descriptor.getAddres());
 
             // Return the expression value on the top of the stack
             if (i != allIdentifiers.size() - 1) {
@@ -186,11 +188,11 @@ public class StatementGenerator extends Generator {
         expressionGenerator.setExpression(expression);
         expressionGenerator.generate();
 
-        addInstruction(Instruction.STO, 0, descriptor.getAddres());
+        addInstruction(Instruction.STO, symbolTable.getLevel(descriptor), descriptor.getAddres());
 
         int startIndex = getCurrentInstructionRow();
 
-        addInstruction(Instruction.LOD, 0, descriptor.getAddres());
+        addInstruction(Instruction.LOD, symbolTable.getLevel(descriptor), descriptor.getAddres());
 
         // Evaluate the assigment int the 'for' header
         Expression toExpression = forLoop.getToExpression();
@@ -211,10 +213,10 @@ public class StatementGenerator extends Generator {
         generate();
 
         // Default increment by 1
-        addInstruction(Instruction.LOD, 0, descriptor.getAddres());
+        addInstruction(Instruction.LOD, symbolTable.getLevel(descriptor), descriptor.getAddres());
         addInstruction(Instruction.LIT, 0, 1);
         addInstruction(Instruction.OPR, 0, 2);
-        addInstruction(Instruction.STO, 0, descriptor.getAddres());
+        addInstruction(Instruction.STO, symbolTable.getLevel(descriptor), descriptor.getAddres());
 
         addInstruction(Instruction.JMP, 0, startIndex + 1);
 
@@ -306,24 +308,7 @@ public class StatementGenerator extends Generator {
     }
 
     private void generateFunctionCall(FunctionCall functionCall) {
-        String identifier = functionCall.getIdentifier();
-        List<Expression> arguments = functionCall.getArguments();
-
-        Descriptor functionDescriptor = symbolTable.lookup(identifier);
-
-        // Allocate space for the return value
-        addInstruction(Instruction.INT, 0, 1);
-
-        // Generate arguments
-        for (Expression argument : arguments) {
-            expressionGenerator.setExpression(argument);
-            expressionGenerator.generate();
-        }
-
-        // Call the function
-        addInstruction(Instruction.CAL, functionDescriptor.getScopeLevel(), functionDescriptor.getAddres());
-
-        // Clear the arguments from the stack
-        addInstruction(Instruction.INT, 0, arguments.size());
+        functionGenerator.setFunctionCall(functionCall);
+        functionGenerator.generate();
     }
 }

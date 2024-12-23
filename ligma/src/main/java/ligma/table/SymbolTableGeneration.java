@@ -7,7 +7,6 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Stack;
 
 @Getter
 @Setter
@@ -34,6 +33,10 @@ class MyScope {
 
     public boolean containsKey(String identifier) {
         return descriptors.containsKey(identifier);
+    }
+
+    public void decrementNextAddress(int decrement) {
+        nextAddress -= decrement;
     }
 
 }
@@ -104,6 +107,10 @@ public class SymbolTableGeneration {
         return null; // Not found
     }
 
+    public int getLevel(Descriptor descriptor) {
+        return scopes.peek().getLevel() - descriptor.getScopeLevel();
+    }
+
     // Check if an identifier exists in the current scope
     public boolean isIdentifierInCurrentScope(String identifier) {
         if (scopes.isEmpty()) {
@@ -113,7 +120,15 @@ public class SymbolTableGeneration {
     }
 
     public int getCurrentScopeLevel() {
-        return scopes.size();
+        return scopes.peek().getLevel();
+    }
+
+    public int getNextAddress() {
+        return scopes.peek().getNextAddress();
+    }
+
+    public void decrementCurrentScopeNextAddress(int decrement) {
+        scopes.peek().decrementNextAddress(decrement);
     }
 
 }
