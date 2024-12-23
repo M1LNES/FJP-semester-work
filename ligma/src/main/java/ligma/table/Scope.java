@@ -17,13 +17,22 @@ public class Scope {
     /// Scope level in the hierarchy
     private final int level;
     /// PL/0 addressing starts at index 3
-    /// TODO: pouzij navesti na dynamicky dopocitavani adres funkci
-    private int addressCounter = 3;
+    private static final int STARTING_ADDRESS = 3;
+    private int currentAddressCounter;
 
     public Scope(String name, Scope parent) {
         this.name = name;
         this.parent = parent;
         this.level = (parent == null) ? 0 : parent.level + 1; // Level is parent's level + 1
+        currentAddressCounter = STARTING_ADDRESS;
+    }
+
+    public int getNextAddress() {
+        return currentAddressCounter++;
+    }
+
+    public int getStartingAddress() {
+        return STARTING_ADDRESS;
     }
 
     /// Add a descriptor for the specified identifier
@@ -34,7 +43,7 @@ public class Scope {
         }
 
         // Increment address in the current scope
-        descriptor.setAddres(addressCounter++);
+//        descriptor.setAddres(addressCounter++);
 
         descriptors.put(identifier, descriptor);
     }

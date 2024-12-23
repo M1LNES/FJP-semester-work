@@ -3,16 +3,18 @@ package ligma.generator;
 import ligma.ast.expression.Expression;
 import ligma.ast.statement.Assignment;
 import ligma.ast.statement.ConstantDefinition;
+import ligma.ast.statement.DoWhileLoop;
 import ligma.ast.statement.IfStatement;
+import ligma.ast.statement.RepeatUntilLoop;
 import ligma.ast.statement.Statement;
 import ligma.ast.statement.VariableDefinition;
+import ligma.ast.statement.WhileLoop;
 import ligma.enums.Instruction;
-import ligma.enums.ScopeType;
+import ligma.exception.GenerateException;
 import ligma.table.Descriptor;
-import ligma.table.SymbolTable;
+import ligma.table.VariableDescriptor;
 import lombok.Setter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Setter
@@ -31,16 +33,31 @@ public class StatementGenerator extends Generator {
                 case ConstantDefinition constDef -> generateConstantDefinition(constDef);
                 case Assignment assignment -> generateAssignment(assignment);
                 case IfStatement ifStatement -> generateIfStatement(ifStatement);
+                case WhileLoop whileLoop -> generateWhile(whileLoop);
+                case DoWhileLoop doWhileLoop -> generateDoWhile(doWhileLoop);
+                case RepeatUntilLoop repeatUntilLoop -> generateRepeatUntil(repeatUntilLoop);
                 default -> {}
             }
         }
     }
 
+
     private void generateVariableDefinition(VariableDefinition varDef) {
         String identifier = varDef.getIdentifier();
         Expression expression = varDef.getExpression();
 
-        Descriptor variableDescriptor = SymbolTable.lookup(identifier);
+        if (symbolTable.isIdentifierInCurrentScope(identifier)) {
+            throw new GenerateException("Identifier '" + identifier + "' was already declared");
+        }
+
+        Descriptor descriptor = VariableDescriptor.builder()
+                                                  .name(identifier)
+                                                  .type(varDef.getType())
+                                                  .isConstant(false)
+                                                  .scopeLevel(symbolTable.getCurrentScopeLevel())
+                                                  .build();
+
+        symbolTable.add(identifier, descriptor);
 
         // Allocate space for the variable
         addInstruction(Instruction.INT, 0, 1);
@@ -50,14 +67,25 @@ public class StatementGenerator extends Generator {
         expressionGenerator.generate();
 
         // Save the result of the expression to the allocated space
-        addInstruction(Instruction.STO, 0, variableDescriptor.getAddres());
+        addInstruction(Instruction.STO, 0, descriptor.getAddres());
     }
 
     private void generateConstantDefinition(ConstantDefinition constDef) {
         String identifier = constDef.getIdentifier();
         Expression expression = constDef.getExpression();
 
-        Descriptor constDescriptor = SymbolTable.lookup(identifier);
+        if (symbolTable.isIdentifierInCurrentScope(identifier)) {
+            throw new GenerateException("Identifier '" + identifier + "' was already declared");
+        }
+
+        Descriptor descriptor = VariableDescriptor.builder()
+                                                  .name(identifier)
+                                                  .type(constDef.getType())
+                                                  .isConstant(false)
+                                                  .scopeLevel(symbolTable.getCurrentScopeLevel())
+                                                  .build();
+
+        symbolTable.add(identifier, descriptor);
 
         // Allocate space for the variable
         addInstruction(Instruction.INT, 0, 1);
@@ -67,8 +95,9 @@ public class StatementGenerator extends Generator {
         expressionGenerator.generate();
 
         // Save the result of the expression to the allocated space
-        addInstruction(Instruction.STO, 0, constDescriptor.getAddres());
+        addInstruction(Instruction.STO, 0, descriptor.getAddres());
     }
+
     private void generateAssignment(Assignment assignment) {
         // Evaluate expression
         Expression expression = assignment.getExpression();
@@ -78,7 +107,7 @@ public class StatementGenerator extends Generator {
         List<String> allIdentifiers = assignment.getAllIdentifiers();
 
         for (int i = 0; i < allIdentifiers.size(); i++) {
-            Descriptor descriptor = SymbolTable.lookup(allIdentifiers.get(i));
+            Descriptor descriptor = symbolTable.lookup(allIdentifiers.get(i));
 
             // Store the value of the expression to the given identifier
             addInstruction(Instruction.STO, 0, descriptor.getAddres());
@@ -89,9 +118,8 @@ public class StatementGenerator extends Generator {
             }
         }
     }
-
     private void generateIfStatement(IfStatement ifStatement) {
-        SymbolTable.reenterScope(ScopeType.IF.name());
+        symbolTable.enterScope(false);
 
         // Evaluate the condition of the if statement
         Expression expression = ifStatement.getExpression();
@@ -112,9 +140,7 @@ public class StatementGenerator extends Generator {
         setStatements(ifStatements);
         generate();
 
-        SymbolTable.exitScope();
-
-        // TODO: fix the if body (the statements are evaluated badly)
+        symbolTable.exitScope();
 
         // Jump over the 'else' body
         // Later we can modify the '-1' to the correct address
@@ -127,7 +153,7 @@ public class StatementGenerator extends Generator {
         // Set the address of JMC to the first instruction of the 'else'
         modifyInstructionAddress(beforeIfRow, afterIfRow + 1);
 
-        SymbolTable.reenterScope(ScopeType.ELSE.name());
+        symbolTable.enterScope(false);
 
         // Generate all statements in the 'if' body
         List<Statement> elseStatements = ifStatement.getElseStatements();
@@ -138,7 +164,85 @@ public class StatementGenerator extends Generator {
 
         modifyInstructionAddress(beforeElseRow, afterElseRow + 1);
 
-        SymbolTable.exitScope();
+        symbolTable.exitScope();
     }
 
+    private void generateWhile(WhileLoop whileLoop) {
+        symbolTable.enterScope(false);
+
+        int beforeCondition = getCurrentInstructionRow();
+
+        // Evaluate the condition of the 'while' loop
+        Expression expression = whileLoop.getExpression();
+        expressionGenerator.setExpression(expression);
+        expressionGenerator.generate();
+
+        // Jump over the 'while' body
+        // Conditional jump - later we can modify the '-1' to the correct address
+        addInstruction(Instruction.JMC, 0, -1);
+
+        int jmcIndex = getCurrentInstructionRow();
+
+        // Generate all statements in the 'while' body
+        List<Statement> whileStatements = whileLoop.getStatements();
+        setStatements(whileStatements);
+        generate();
+
+        // Jump to the first address in the 'while' body
+        addInstruction(Instruction.JMP, 0, beforeCondition + 1);
+
+        // Modify the JMC instruction to jump over the 'while' body
+        modifyInstructionAddress(jmcIndex, getCurrentInstructionRow() + 1);
+
+        symbolTable.exitScope();
+    }
+
+    private void generateDoWhile(DoWhileLoop doWhileLoop) {
+        symbolTable.enterScope(false);
+
+        int doBodyStart = getCurrentInstructionRow();
+
+        // Generate all statements in the 'do' body
+        List<Statement> doWhileStatements = doWhileLoop.getStatements();
+        setStatements(doWhileStatements);
+        generate();
+
+        // Evaluate the condition
+        Expression expression = doWhileLoop.getExpression();
+        expressionGenerator.setExpression(expression);
+        expressionGenerator.generate();
+
+        // Jump over the 'do-while' body
+        // Conditional jump - later we can modify the '-1' to the correct address
+        addInstruction(Instruction.JMC, 0, -1);
+
+        int jmcIndex = getCurrentInstructionRow();
+
+        addInstruction(Instruction.JMP, 0, doBodyStart + 1);
+
+        modifyInstructionAddress(jmcIndex, getCurrentInstructionRow() + 1);
+
+        symbolTable.exitScope();
+    }
+
+    private void generateRepeatUntil(RepeatUntilLoop repeatUntilLoop) {
+        symbolTable.enterScope(false);
+
+        int repeatBodyStart = getCurrentInstructionRow();
+
+        // Generate all statements in the 'repeat' body
+        List<Statement> doWhileStatements = repeatUntilLoop.getStatements();
+        setStatements(doWhileStatements);
+        generate();
+
+        // Evaluate the condition
+        Expression expression = repeatUntilLoop.getExpression();
+        expressionGenerator.setExpression(expression);
+        expressionGenerator.generate();
+
+        // Jump to the start of the 'repeat-until' body
+        addInstruction(Instruction.JMC, 0, repeatBodyStart + 1);
+
+        symbolTable.exitScope();
+    }
 }

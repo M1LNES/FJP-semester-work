@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum Operator {
     // Arithmetic Operators
-    UNARY_MINUS("-", 1),
     ADD("+", 2),
     SUB("-", 3),
     MUL("*", 4),
