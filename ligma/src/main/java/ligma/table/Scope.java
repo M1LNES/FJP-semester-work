@@ -16,6 +16,9 @@ public class Scope {
     private final Scope parent;
     /// Scope level in the hierarchy
     private final int level;
+    /// PL/0 addressing starts at index 3
+    /// TODO: pouzij navesti na dynamicky dopocitavani adres funkci
+    private int addressCounter = 3;
 
     public Scope(String name, Scope parent) {
         this.name = name;
@@ -29,6 +32,9 @@ public class Scope {
         if (descriptors.containsKey(identifier)) {
             throw new IllegalArgumentException("Duplicate identifier: " + identifier);
         }
+
+        // Increment address in the current scope
+        descriptor.setAddres(addressCounter++);
 
         descriptors.put(identifier, descriptor);
     }

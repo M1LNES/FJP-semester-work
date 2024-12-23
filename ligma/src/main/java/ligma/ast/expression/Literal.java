@@ -2,7 +2,6 @@ package ligma.ast.expression;
 
 import ligma.enums.DataType;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
 public class Literal<T> extends Expression {

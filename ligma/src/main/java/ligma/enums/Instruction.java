@@ -14,8 +14,8 @@ package ligma.enums;
 /// | 5    | Integer division (`/`)                   |
 /// | 6    | Modulo division (`%`)                    |
 /// | 7    | Test if a number is odd                  |
-/// | 8    | Equality test (`=`)                      |
-/// | 9    | Inequality test (`<`, `>`)               |
+/// | 8    | Equality test (`==`)                      |
+/// | 9    | Inequality test (`!=`)               |
 /// | 10   | Less than (`<`)                          |
 /// | 11   | Greater than or equal to (`>=`)          |
 /// | 12   | Greater than (`>`)                       |

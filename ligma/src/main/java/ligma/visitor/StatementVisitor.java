@@ -160,7 +160,7 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
 
         // 'else' is not present
         if (ctx.ELSE() == null) {
-            return new IfStatement(expression, ifStatements, null);
+            return new IfStatement(expression, ifStatements, new ArrayList<>());
         }
 
         SymbolTable.enterScope(ScopeType.ELSE.name());

@@ -3,6 +3,7 @@ package ligma.table;
 import ligma.enums.DataType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 /// Descriptor used in the Symbol Table.
 @Getter
@@ -15,7 +16,8 @@ public abstract class Descriptor {
     private DataType type;
     /// Scope level of the indentifier.
     private int scopeLevel;
-    /// Address in stack.
+    /// Relative Address (to the current scope) in stack.
+    @Setter
     private int addres;
 
 }
