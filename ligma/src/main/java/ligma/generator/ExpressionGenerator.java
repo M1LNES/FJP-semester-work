@@ -12,11 +12,14 @@ import ligma.ast.expression.NotExpression;
 import ligma.ast.expression.ParenthesizedExpression;
 import ligma.ast.expression.UnaryMinusExpression;
 import ligma.ast.expression.UnaryPlusExpression;
+import ligma.ast.statement.FunctionCall;
 import ligma.enums.Instruction;
 import ligma.enums.Operator;
 import ligma.exception.GenerateException;
 import ligma.table.Descriptor;
 import lombok.Setter;
+
+import java.util.List;
 
 @Setter
 public class ExpressionGenerator extends Generator {
@@ -36,7 +39,7 @@ public class ExpressionGenerator extends Generator {
             case ParenthesizedExpression parenthesizedExpression -> {} // Nothing needed
             case Identifier identifier -> genIdentifierExpression(identifier);
             case Literal<?> literal -> generateLiteral(literal);
-            case FunctionCallExpression functionCallExpression -> {} // TODO: add
+            case FunctionCallExpression functionCallExpression -> generateFunctionCallExpression(functionCallExpression);
             default -> {}
         }
     }
@@ -305,6 +308,28 @@ public class ExpressionGenerator extends Generator {
             case Boolean bool -> addInstruction(Instruction.LIT, 0, bool ? 1 : 0);
             default -> throw new GenerateException("Unexpected value: " + literal.getValue());
         }
+    }
+
+    private void generateFunctionCallExpression(FunctionCallExpression functionCall) {
+        String identifier = functionCall.getIdentifier();
+        List<Expression> arguments = functionCall.getArguments();
+
+        Descriptor functionDescriptor = symbolTable.lookup(identifier);
+
+        // Allocate space for the return value
+        addInstruction(Instruction.INT, 0, 1);
+
+        // Generate arguments
+        for (Expression argument : arguments) {
+            setExpression(argument);
+            generate();
+        }
+
+        // Call the function
+        addInstruction(Instruction.CAL, functionDescriptor.getScopeLevel(), functionDescriptor.getAddres());
+
+        // Clear the arguments from the stack
+        addInstruction(Instruction.INT, 0, arguments.size());
     }
 
 }

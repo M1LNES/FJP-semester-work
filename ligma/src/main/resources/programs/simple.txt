@@ -1,5 +1,9 @@
-int a = 7;
+int x = foo(10, 20);
 
-repeat {
-    a = a - 1;
-} until (a < 1);
+func int foo(int x, int y)
+{
+    int a = x + 1;
+    int b = y + 2;
+
+    return a + b;
+}

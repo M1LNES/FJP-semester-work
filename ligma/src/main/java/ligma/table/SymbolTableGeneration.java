@@ -1,6 +1,7 @@
 package ligma.table;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -9,13 +10,11 @@ import java.util.Map;
 import java.util.Stack;
 
 @Getter
+@Setter
 class MyScope {
     private final Map<String, Descriptor> descriptors = new HashMap<>();
     private int nextAddress;
-
-    public MyScope(int nextAddress) {
-        this.nextAddress = nextAddress;
-    }
+    private int level;
 
     public void addDescriptor(String identifier, Descriptor descriptor) {
         descriptors.put(identifier, descriptor);
@@ -29,6 +28,10 @@ class MyScope {
         return nextAddress++;
     }
 
+    public int getCurrentAddress() {
+        return nextAddress;
+    }
+
     public boolean containsKey(String identifier) {
         return descriptors.containsKey(identifier);
     }
@@ -40,7 +43,7 @@ public class SymbolTableGeneration {
     // Stack to manage nested scopes
     private final Deque<MyScope> scopes;
 
-    private int currentScopeAddressCounter = 3;
+    private static final int START_ADDRESS = 3;
 
     // Constructor to initialize the stack
     public SymbolTableGeneration() {
@@ -49,11 +52,23 @@ public class SymbolTableGeneration {
 
     // Enter a new scope by pushing a new scope onto the stack
     public void enterScope(boolean isNamedScope) {
-        int nextAddress = (isNamedScope || scopes.isEmpty())
-            ? 3
-            : scopes.peek().getNextAddress();
+        MyScope scope = new MyScope();
 
-        scopes.push(new MyScope(nextAddress));
+        // Scope is a function
+        if (isNamedScope) {
+            scope.setNextAddress(START_ADDRESS);
+            scope.setLevel(scope.getLevel() + 1);
+        }
+        // Scope is not a function
+        else {
+            int nextAddress = scopes.isEmpty()
+                ? START_ADDRESS
+                : scopes.peek().getCurrentAddress();
+
+            scope.setNextAddress(nextAddress);
+        }
+
+        scopes.push(scope);
     }
 
     // Exit the current scope by popping the top map off the stack
