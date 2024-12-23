@@ -1,10 +1,5 @@
-int x = 5;
+int a = 7;
 
-if (x < 10)
-{
-    int l = 3;
-}
-else
-{
-    int k = 6;
-}
+repeat {
+    a = a - 1;
+} until (a < 1);

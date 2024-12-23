@@ -2,6 +2,7 @@ package ligma.generator;
 
 import ligma.enums.Instruction;
 import ligma.exception.GenerateException;
+import ligma.table.SymbolTableGeneration;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,6 +23,8 @@ public abstract class Generator {
     private static List<InstructionInfo> instructions = new ArrayList<>();
     @Setter
     private static BufferedWriter writer;
+
+    protected static SymbolTableGeneration symbolTable = new SymbolTableGeneration();
 
     public abstract void generate();
 

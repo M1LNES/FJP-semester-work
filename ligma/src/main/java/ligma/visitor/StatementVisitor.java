@@ -60,7 +60,7 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
 
         SymbolTable.add(identifier, descriptor);
 
-        return new VariableDefinition(identifier, expression);
+        return new VariableDefinition(identifier, dataType, expression);
     }
 
     @Override
@@ -92,7 +92,7 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
 
         SymbolTable.add(identifier, descriptor);
 
-        return new ConstantDefinition(identifier, expression);
+        return new ConstantDefinition(identifier, dataType, expression);
     }
 
     @Override
