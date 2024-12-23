@@ -3,6 +3,7 @@
 /ligma/.mvn
 /ligma/target
 /ligma/src/main/java/ligma/generated/*
+/doc/texmf
 
 ### VSCode ###
 .vscode/*

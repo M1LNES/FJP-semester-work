@@ -90,7 +90,7 @@ public class FunctionDefinitionVisitor extends LigmaBaseVisitor<Function> {
 
         SymbolTable.add(identifier, descriptor);
 
-        return new Function(identifier, returnType, parameters, statements);
+        return new Function(identifier, returnType, parameters, statements, returnExpr);
     }
 
 }

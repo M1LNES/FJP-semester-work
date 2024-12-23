@@ -14,11 +14,6 @@ import java.util.List;
 @Setter
 public abstract class Generator {
 
-    @Setter
-    protected static StatementGenerator statementGenerator;
-    @Setter
-    protected static ExpressionGenerator expressionGenerator;
-
     @Getter
     private static List<InstructionInfo> instructions = new ArrayList<>();
     @Setter

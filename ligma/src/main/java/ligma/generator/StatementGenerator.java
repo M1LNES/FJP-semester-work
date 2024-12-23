@@ -4,11 +4,14 @@ import ligma.ast.expression.Expression;
 import ligma.ast.statement.Assignment;
 import ligma.ast.statement.ConstantDefinition;
 import ligma.ast.statement.DoWhileLoop;
+import ligma.ast.statement.ForLoop;
+import ligma.ast.statement.FunctionCall;
 import ligma.ast.statement.IfStatement;
 import ligma.ast.statement.RepeatUntilLoop;
 import ligma.ast.statement.Statement;
 import ligma.ast.statement.VariableDefinition;
 import ligma.ast.statement.WhileLoop;
+import ligma.enums.DataType;
 import ligma.enums.Instruction;
 import ligma.exception.GenerateException;
 import ligma.table.Descriptor;
@@ -33,14 +36,15 @@ public class StatementGenerator extends Generator {
                 case ConstantDefinition constDef -> generateConstantDefinition(constDef);
                 case Assignment assignment -> generateAssignment(assignment);
                 case IfStatement ifStatement -> generateIfStatement(ifStatement);
+                case ForLoop forLoop -> generateForLoop(forLoop);
                 case WhileLoop whileLoop -> generateWhile(whileLoop);
                 case DoWhileLoop doWhileLoop -> generateDoWhile(doWhileLoop);
                 case RepeatUntilLoop repeatUntilLoop -> generateRepeatUntil(repeatUntilLoop);
+                case FunctionCall functionCall -> generateFunctionCall(functionCall);
                 default -> {}
             }
         }
     }
-
 
     private void generateVariableDefinition(VariableDefinition varDef) {
         String identifier = varDef.getIdentifier();
@@ -118,18 +122,15 @@ public class StatementGenerator extends Generator {
             }
         }
     }
+
     private void generateIfStatement(IfStatement ifStatement) {
         symbolTable.enterScope(false);
 
-        // Evaluate the condition of the if statement
+        // Evaluate the condition of the 'if' statement
         Expression expression = ifStatement.getExpression();
         expressionGenerator.setExpression(expression);
         expressionGenerator.generate();
 
-        // Lit 'true' to the top of the stack
-        addInstruction(Instruction.LIT, 0, 1);
-        // Compare the expression result with the 'true'
-        addInstruction(Instruction.OPR, 0, 8);
         // Conditional jump - later we can modify the '-1' to the correct address
         addInstruction(Instruction.JMC, 0, -1);
 
@@ -140,11 +141,11 @@ public class StatementGenerator extends Generator {
         setStatements(ifStatements);
         generate();
 
-        symbolTable.exitScope();
-
         // Jump over the 'else' body
         // Later we can modify the '-1' to the correct address
         addInstruction(Instruction.JMP, 0, -1);
+
+        symbolTable.exitScope();
 
         int afterIfRow = getCurrentInstructionRow();
 
@@ -165,6 +166,64 @@ public class StatementGenerator extends Generator {
         modifyInstructionAddress(beforeElseRow, afterElseRow + 1);
 
         symbolTable.exitScope();
+    }
+    private void generateForLoop(ForLoop forLoop) {
+        symbolTable.enterScope(false);
+
+        Descriptor descriptor = VariableDescriptor.builder()
+                                                  .name(forLoop.getIdentifier())
+                                                  .type(DataType.INT)
+                                                  .isConstant(false)
+                                                  .scopeLevel(symbolTable.getCurrentScopeLevel())
+                                                  .build();
+
+        symbolTable.add(forLoop.getIdentifier(), descriptor);
+
+        addInstruction(Instruction.INT, 0, 1);
+
+        // Evaluate the variable definition in the 'for' header
+        Expression expression = forLoop.getExpression();
+        expressionGenerator.setExpression(expression);
+        expressionGenerator.generate();
+
+        addInstruction(Instruction.STO, 0, descriptor.getAddres());
+
+        int startIndex = getCurrentInstructionRow();
+
+        addInstruction(Instruction.LOD, 0, descriptor.getAddres());
+
+        // Evaluate the assigment int the 'for' header
+        Expression toExpression = forLoop.getToExpression();
+        expressionGenerator.setExpression(toExpression);
+        expressionGenerator.generate();
+
+        // Compare
+        addInstruction(Instruction.OPR, 0, 10);
+
+        // Jump over the 'for' body
+        addInstruction(Instruction.JMC, 0, -1);
+
+        int beforeForBody = getCurrentInstructionRow();
+
+        // Generate 'for' statements
+        List<Statement> statements = forLoop.getStatements();
+        setStatements(statements);
+        generate();
+
+        // Default increment by 1
+        addInstruction(Instruction.LOD, 0, descriptor.getAddres());
+        addInstruction(Instruction.LIT, 0, 1);
+        addInstruction(Instruction.OPR, 0, 2);
+        addInstruction(Instruction.STO, 0, descriptor.getAddres());
+
+        addInstruction(Instruction.JMP, 0, startIndex + 1);
+
+        int afterForBody = getCurrentInstructionRow();
+
+        modifyInstructionAddress(beforeForBody, afterForBody + 1);
+
+        symbolTable.exitScope();
+
     }
 
     private void generateWhile(WhileLoop whileLoop) {
@@ -244,5 +303,27 @@ public class StatementGenerator extends Generator {
         addInstruction(Instruction.JMC, 0, repeatBodyStart + 1);
 
         symbolTable.exitScope();
+    }
+
+    private void generateFunctionCall(FunctionCall functionCall) {
+        String identifier = functionCall.getIdentifier();
+        List<Expression> arguments = functionCall.getArguments();
+
+        Descriptor functionDescriptor = symbolTable.lookup(identifier);
+
+        // Allocate space for the return value
+        addInstruction(Instruction.INT, 0, 1);
+
+        // Generate arguments
+        for (Expression argument : arguments) {
+            expressionGenerator.setExpression(argument);
+            expressionGenerator.generate();
+        }
+
+        // Call the function
+        addInstruction(Instruction.CAL, functionDescriptor.getScopeLevel(), functionDescriptor.getAddres());
+
+        // Clear the arguments from the stack
+        addInstruction(Instruction.INT, 0, arguments.size());
     }
 }

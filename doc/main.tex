@@ -1,0 +1,54 @@
+\documentclass[czech, oth, kiv, he, iso690numb, viewonly]{fasthesis}
+\usepackage[all]{hypcap} % \ref přesměruje uživatele na obrázek místo captionu obrázku
+\usepackage{minted2}
+\usepackage{caption}
+\usepackage{sourcecodepro}
+\usepackage{amsmath}
+
+\definecolor{codebg}{RGB}{240, 240, 240}
+
+% Format the list of listings to have dots
+\renewcommand{\listoflistings}{%
+  \listof{listing}{Seznam výpisů}
+  \addcontentsline{toc}{chapter}{Seznam výpisů}
+  \label{lst:list_of_listings}
+}
+
+ % Set the label format for listings
+\DeclareCaptionLabelFormat{mylisting}{Zdrojový kód #2}
+\captionsetup[listing]{labelformat=mylisting}
+
+\worktypespec{Semestrální práce}
+\title{Překladač jazyka Ligma}
+\author{Milan Janoch}{a Jakub Pavlíček}{Bc.}{}
+\addbibresource{literatura.bib}
+
+\begin{document}
+    \frontpages[tm]
+    \tableofcontents
+
+    \chapter{Úvod}
+
+    \captionof{listing}{Ukázka kódu}
+    \label{lst:code_example}
+    \vspace{-0.4em}
+    \begin{minted}[fontsize=\footnotesize, linenos, numbersep=6pt, bgcolor=codebg]{cpp}
+// Residual calculation between actual and predicted values
+float residual(const float y_actual, const float y_predicted)
+{
+    return y_actual - y_predicted;
+}
+    \end{minted}
+
+    \chapter{Testování}
+
+    \chapter{Závěr}
+
+    \appendix
+
+    \printbibliography
+    
+    \backmatter
+    \listoflistings
+
+\end{document}

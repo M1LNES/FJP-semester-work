@@ -21,19 +21,22 @@ public class ProgramGenerator extends Generator {
         addInstruction(Instruction.INT, 0, 3);
 
         // Enter global scope
-        symbolTable.enterScope(true);
+        symbolTable.enterScope(false);
 
         List<Statement> statements = program.getStatements();
         List<Function> functions = program.getFunctions();
+
+        // Generate functions
+        FunctionGenerator functionGenerator = new FunctionGenerator();
+        functionGenerator.setFunctions(functions);
+        functionGenerator.generate();
+
+        Generator.writeInstructions();
 
         // Generate statements
         StatementGenerator statementGenerator = new StatementGenerator();
         statementGenerator.setStatements(statements);
         statementGenerator.generate();
-
-        // Generate functions
-        Generator functionGenerator = new FunctionGenerator(functions);
-        functionGenerator.generate();
 
         // Exit global scope
         symbolTable.exitScope();
