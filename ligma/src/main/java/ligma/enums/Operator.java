@@ -8,27 +8,29 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum Operator {
     // Arithmetic Operators
-    ADD("+"),
-    SUB("-"),
-    MUL("*"),
-    DIV("/"),
-    MOD("%"),
-    POW("^"),
+    UNARY_MINUS("-", 1),
+    ADD("+", 2),
+    SUB("-", 3),
+    MUL("*", 4),
+    DIV("/", 5),
+    MOD("%", 6),
+    POW("^", -1),
 
     // Relational Operators
-    EQ("=="),
-    NEQ("!="),
-    GT(">"),
-    LT("<"),
-    GTE(">="),
-    LTE("<="),
+    EQ("==", 8),
+    NEQ("!=", 9),
+    LT("<", 10),
+    GTE(">=", 11),
+    GT(">", 12),
+    LTE("<=", 13),
 
     // Logical Operators
-    AND("&&"),
-    OR("||"),
-    NOT("!");
+    AND("&&", -1),
+    OR("||", -1),
+    NOT("!", -1);
 
     private final String symbol;
+    private final int code;
 
     public static Operator fromSymbol(String symbol) {
         for (Operator op : Operator.values()) {

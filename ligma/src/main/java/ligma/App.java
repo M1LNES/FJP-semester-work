@@ -3,6 +3,8 @@ package ligma;
 import ligma.ast.program.Program;
 import ligma.generated.LigmaLexer;
 import ligma.generated.LigmaParser;
+import ligma.generator.Generator;
+import ligma.generator.ProgramGenerator;
 import ligma.listener.EnhancedLigmaLexer;
 import ligma.listener.SyntaxErrorListener;
 import ligma.table.Scope;
@@ -13,24 +15,29 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 
+import java.io.BufferedWriter;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
 @Slf4j
 public class App {
+
     public static void main(String[] args) {
-        if (args.length != 1) {
-            log.error("Compiler expected one argument: file with program");
+        if (args.length != 2) {
+            log.error("Compiler expected two arguments: <file with program> <output file with PL/0 instructions>");
             return;
         }
 
-        String filename = args[0];
+        String inputFilename = args[0];
+        String outputFilename = args[1];
 
-        try(InputStream input = new FileInputStream(filename))
-        {
-            log.info("Successfully opened file: {}", filename);
+        Program program = null;
+
+        try (InputStream input = new FileInputStream(inputFilename)) {
+            log.info("Successfully opened input file: {}", inputFilename);
 
             CharStream charStream = CharStreams.fromStream(input);
             LigmaLexer ligmaLexer = new EnhancedLigmaLexer(charStream);
@@ -44,15 +51,31 @@ public class App {
             LigmaParser.ProgramContext programContext = parser.program();
             ProgramVisitor programVisitor = new ProgramVisitor();
 
-            Program program = programVisitor.visit(programContext);
+            program = programVisitor.visit(programContext);
 
             Map<String, Scope> symbolTable = SymbolTable.getScopes();
 
             log.info("Semantic analysis has finished successfully");
+        } catch (IOException exception) {
+            log.error("File not found: {}", inputFilename);
         }
-        catch (IOException exception)
-        {
-            log.error("File not found: {}", filename);
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilename))) {
+            log.info("Successfully opened output file: {}", inputFilename);
+
+            SymbolTable.resetCounter();
+
+            Generator.setWriter(writer);
+
+            Generator programGenerator = new ProgramGenerator(program);
+            programGenerator.generate();
+
+            Generator.writeInstructions();
+
+            log.info("Successfully generated PL/0 instructions to the output file");
+        } catch (IOException exception) {
+            log.error("Output file not found: {}", outputFilename);
         }
     }
+
 }
