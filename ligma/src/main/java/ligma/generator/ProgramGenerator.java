@@ -4,6 +4,7 @@ import ligma.enums.Instruction;
 import ligma.ir.function.Function;
 import ligma.ir.program.Program;
 import ligma.ir.statement.Statement;
+import ligma.table.SymbolTable;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public class ProgramGenerator extends Generator {
         addInstruction(Instruction.INT, 0, 3);
 
         // Enter global scope
-        symbolTable.enterScope(false);
+        SymbolTable.enterScope(false);
 
         List<Statement> statements = program.statements();
         List<Function> functions = program.functions();
@@ -35,7 +36,7 @@ public class ProgramGenerator extends Generator {
         statementGenerator.generate();
 
         // Exit global scope
-        symbolTable.exitScope();
+        SymbolTable.exitScope();
 
         // Last instruction indicating end
         addInstruction(Instruction.RET, 0, 0);

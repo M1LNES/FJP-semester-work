@@ -1,9 +1,8 @@
 package ligma.generator;
 
-import ligma.ir.function.Function;
 import ligma.enums.Instruction;
 import ligma.exception.GenerateException;
-import ligma.table.SymbolTableGenerator;
+import ligma.ir.function.Function;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,8 +20,6 @@ public abstract class Generator {
     private static List<InstructionInfo> instructions = new ArrayList<>();
     @Setter
     private static BufferedWriter writer;
-
-    protected static SymbolTableGenerator symbolTable = new SymbolTableGenerator();
 
     public abstract void generate();
 

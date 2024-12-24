@@ -63,8 +63,6 @@ public class App {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilename))) {
             log.info("Successfully opened output file: {}", inputFilename);
 
-            SymbolTable.resetCounter();
-
             Generator.setWriter(writer);
 
             Generator programGenerator = new ProgramGenerator(program);

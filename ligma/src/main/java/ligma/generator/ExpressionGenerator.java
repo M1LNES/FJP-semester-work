@@ -17,6 +17,7 @@ import ligma.ir.expression.PowerExpression;
 import ligma.ir.expression.UnaryMinusExpression;
 import ligma.ir.expression.UnaryPlusExpression;
 import ligma.table.Descriptor;
+import ligma.table.SymbolTable;
 import lombok.Setter;
 
 @Setter
@@ -71,7 +72,7 @@ public class ExpressionGenerator extends Generator {
         int functionBodyIndex = getCurrentInstructionRow();
 
         // Enter function scope
-        symbolTable.enterScope(true);
+        SymbolTable.enterScope(true);
 
         // Allocate space in the stack for the Activation Record and result
         addInstruction(Instruction.INT, 0, 4);
@@ -80,14 +81,14 @@ public class ExpressionGenerator extends Generator {
         addInstruction(Instruction.LIT, 0, 1);
 
         // Save 1 to the result
-        int resultAddress = symbolTable.getNextAddress();
+        int resultAddress = SymbolTable.getNextAddress();
         addInstruction(Instruction.STO, 0, resultAddress);
 
         // Base
         generateExpression(left);
 
         // Save base address
-        int baseAddress = symbolTable.getNextAddress();
+        int baseAddress = SymbolTable.getNextAddress();
 
         // Exponent
         generateExpression(right);
@@ -96,7 +97,7 @@ public class ExpressionGenerator extends Generator {
         generateExpression(right);
 
         // Save counter to the stack
-        int counterAddress = symbolTable.getNextAddress();
+        int counterAddress = SymbolTable.getNextAddress();
 
         // Loop address of the power expression
         int loopStart = getCurrentInstructionRow();
@@ -152,7 +153,7 @@ public class ExpressionGenerator extends Generator {
         addInstruction(Instruction.RET, 0, 0);
 
         // Exit function scope
-        symbolTable.exitScope();
+        SymbolTable.exitScope();
 
         // Address of the last function instruction
         int afterFunctionBodyIndex = getCurrentInstructionRow();
@@ -372,9 +373,9 @@ public class ExpressionGenerator extends Generator {
 
     private void genIdentifierExpression(Identifier identifier) {
         String idenName = identifier.getName();
-        Descriptor descriptor = symbolTable.lookup(idenName);
+        Descriptor descriptor = SymbolTable.lookup(idenName);
 
-        addInstruction(Instruction.LOD, symbolTable.getLevel(idenName), descriptor.getAddres());
+        addInstruction(Instruction.LOD, SymbolTable.getLevel(idenName), descriptor.getAddres());
     }
 
     private void generateLiteral(Literal<?> literal) {

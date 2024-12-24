@@ -127,7 +127,7 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
     public Statement visitIfStatement(LigmaParser.IfStatementContext ctx) {
         log.debug("If statement: {}", ctx.getText());
 
-        SymbolTable.enterScope(ScopeType.IF.name());
+        SymbolTable.enterScope(false);
 
         Expression expression = expressionVisitor.visit(ctx.expression());
 
@@ -149,7 +149,7 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
             return new IfStatement(expression, ifStatements, new ArrayList<>());
         }
 
-        SymbolTable.enterScope(ScopeType.ELSE.name());
+        SymbolTable.enterScope(false);
 
         // Traverse statements in the 'else' body
         List<Statement> elseStatements = new ArrayList<>();
@@ -166,7 +166,7 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
     public Statement visitForLoop(LigmaParser.ForLoopContext ctx) {
         log.debug("For loop: {}", ctx.getText());
 
-        SymbolTable.enterScope(ScopeType.FOR.name());
+        SymbolTable.enterScope(false);
 
         String identifier = ctx.IDENTIFIER().getText();
 
@@ -200,7 +200,7 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
     public Statement visitWhileLoop(LigmaParser.WhileLoopContext ctx) {
         log.debug("While loop: {}", ctx.getText());
 
-        SymbolTable.enterScope(ScopeType.WHILE.name());
+        SymbolTable.enterScope(false);
 
         Expression expression = expressionVisitor.visit(ctx.expression());
 
@@ -238,7 +238,7 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
         ScopeType scopeType,
         BiFunction<List<Statement>, Expression, Statement> loopConstructor
     ) {
-        SymbolTable.enterScope(scopeType.name());
+        SymbolTable.enterScope(false);
 
         // Traverse statements in the loop body
         List<Statement> statements = statementCtxList.stream()
@@ -269,7 +269,7 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
                                                   .name(identifier)
                                                   .type(dataType)
                                                   .isConstant(isConstant)
-                                                  .scopeLevel(SymbolTable.getCurrentScope().getLevel())
+                                                  .scopeLevel(SymbolTable.getLevel(identifier))
                                                   .build();
 
         SymbolTable.add(identifier, descriptor);

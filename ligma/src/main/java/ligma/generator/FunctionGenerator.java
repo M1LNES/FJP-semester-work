@@ -8,6 +8,7 @@ import ligma.ir.function.Function;
 import ligma.ir.function.FunctionParameter;
 import ligma.ir.statement.Statement;
 import ligma.table.Descriptor;
+import ligma.table.SymbolTable;
 import ligma.table.VariableDescriptor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -86,7 +87,7 @@ public class FunctionGenerator extends Generator {
     }
 
     private void generateFunction(Function function) {
-        symbolTable.enterScope(true);
+        SymbolTable.enterScope(true);
 
         // Function info
         String identifier = function.name();
@@ -123,7 +124,7 @@ public class FunctionGenerator extends Generator {
         // Return
         addInstruction(Instruction.RET, 0, 0);
 
-        symbolTable.exitScope();
+        SymbolTable.exitScope();
     }
 
     private void addParametersToTheSymbolTable(List<FunctionParameter> parameters) {
@@ -134,7 +135,7 @@ public class FunctionGenerator extends Generator {
                 .isConstant(false)
                 .build();
 
-            symbolTable.add(parameter.name(), paramDescriptor);
+            SymbolTable.add(parameter.name(), paramDescriptor);
         }
     }
 
