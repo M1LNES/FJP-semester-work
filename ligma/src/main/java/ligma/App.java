@@ -1,10 +1,10 @@
 package ligma;
 
-import ligma.ir.program.Program;
 import ligma.generated.LigmaLexer;
 import ligma.generated.LigmaParser;
 import ligma.generator.Generator;
 import ligma.generator.ProgramGenerator;
+import ligma.ir.program.Program;
 import ligma.listener.EnhancedLigmaLexer;
 import ligma.listener.SyntaxErrorListener;
 import ligma.table.Scope;
@@ -36,6 +36,7 @@ public class App {
 
         Program program = null;
 
+        // Run lexical, syntax and semantic analysis
         try (InputStream input = new FileInputStream(inputFilename)) {
             log.info("Successfully opened input file: {}", inputFilename);
 
@@ -53,13 +54,12 @@ public class App {
 
             program = programVisitor.visit(programContext);
 
-            Map<String, Scope> symbolTable = SymbolTable.getScopes();
-
             log.info("Semantic analysis has finished successfully");
         } catch (IOException exception) {
             log.error("File not found: {}", inputFilename);
         }
 
+        // Run code generation
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilename))) {
             log.info("Successfully opened output file: {}", inputFilename);
 

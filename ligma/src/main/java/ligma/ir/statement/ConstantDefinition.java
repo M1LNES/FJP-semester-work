@@ -1,7 +1,7 @@
 package ligma.ir.statement;
 
-import ligma.ir.expression.Expression;
 import ligma.enums.DataType;
+import ligma.ir.expression.Expression;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

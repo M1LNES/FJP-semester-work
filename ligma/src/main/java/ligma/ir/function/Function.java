@@ -1,8 +1,8 @@
 package ligma.ir.function;
 
+import ligma.enums.DataType;
 import ligma.ir.expression.Expression;
 import ligma.ir.statement.Statement;
-import ligma.enums.DataType;
 
 import java.util.List;
 

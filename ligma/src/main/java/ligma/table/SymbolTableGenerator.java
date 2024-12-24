@@ -11,10 +11,10 @@ import java.util.Map;
 @Getter
 @Setter
 class GeneratorScope {
+
     private final Map<String, Descriptor> descriptors = new HashMap<>();
     private boolean isNamed;
     private int nextAddress;
-    private int level;
 
     public void addDescriptor(String identifier, Descriptor descriptor) {
         descriptors.put(identifier, descriptor);
@@ -34,10 +34,6 @@ class GeneratorScope {
 
     public boolean containsKey(String identifier) {
         return descriptors.containsKey(identifier);
-    }
-
-    public void decrementNextAddress(int decrement) {
-        nextAddress -= decrement;
     }
 
 }
@@ -62,7 +58,6 @@ public class SymbolTableGenerator {
         if (isNamedScope) {
             scope.setNamed(true);
             scope.setNextAddress(START_ADDRESS);
-            scope.setLevel(0);
         }
         // Scope is not a function
         else {
@@ -126,11 +121,10 @@ public class SymbolTableGenerator {
     }
 
     public int getNextAddress() {
+        if (scopes.isEmpty()) {
+            throw new IllegalStateException("No active scope to get the next address.");
+        }
         return scopes.peek().getNextAddress();
-    }
-
-    public void decrementCurrentScopeNextAddress(int decrement) {
-        scopes.peek().decrementNextAddress(decrement);
     }
 
 }

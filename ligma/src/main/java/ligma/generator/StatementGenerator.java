@@ -1,5 +1,7 @@
 package ligma.generator;
 
+import ligma.enums.DataType;
+import ligma.enums.Instruction;
 import ligma.ir.expression.Expression;
 import ligma.ir.statement.Assignment;
 import ligma.ir.statement.ConstantDefinition;
@@ -11,9 +13,6 @@ import ligma.ir.statement.RepeatUntilLoop;
 import ligma.ir.statement.Statement;
 import ligma.ir.statement.VariableDefinition;
 import ligma.ir.statement.WhileLoop;
-import ligma.enums.DataType;
-import ligma.enums.Instruction;
-import ligma.exception.GenerateException;
 import ligma.table.Descriptor;
 import ligma.table.VariableDescriptor;
 import lombok.Setter;

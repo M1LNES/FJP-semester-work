@@ -1,15 +1,15 @@
 package ligma.visitor;
 
+import ligma.enums.DataType;
+import ligma.exception.SemanticException;
+import ligma.generated.LigmaBaseVisitor;
+import ligma.generated.LigmaParser;
 import ligma.ir.expression.Expression;
 import ligma.ir.expression.FunctionCallExpression;
 import ligma.ir.function.Function;
 import ligma.ir.function.FunctionParameter;
 import ligma.ir.statement.FunctionCall;
 import ligma.ir.statement.Statement;
-import ligma.enums.DataType;
-import ligma.exception.SemanticException;
-import ligma.generated.LigmaBaseVisitor;
-import ligma.generated.LigmaParser;
 import ligma.table.Descriptor;
 import ligma.table.FunctionDescriptor;
 import ligma.table.SymbolTable;

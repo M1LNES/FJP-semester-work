@@ -1,7 +1,7 @@
 package ligma.ir.expression;
 
-import ligma.ir.function.Callable;
 import ligma.enums.DataType;
+import ligma.ir.function.Callable;
 import lombok.Getter;
 
 import java.util.List;

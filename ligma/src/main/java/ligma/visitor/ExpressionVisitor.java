@@ -1,5 +1,10 @@
 package ligma.visitor;
 
+import ligma.enums.DataType;
+import ligma.enums.Operator;
+import ligma.exception.SemanticException;
+import ligma.generated.LigmaBaseVisitor;
+import ligma.generated.LigmaParser;
 import ligma.ir.expression.AdditiveExpression;
 import ligma.ir.expression.ComparisonExpression;
 import ligma.ir.expression.Expression;
@@ -12,11 +17,6 @@ import ligma.ir.expression.ParenthesizedExpression;
 import ligma.ir.expression.PowerExpression;
 import ligma.ir.expression.UnaryMinusExpression;
 import ligma.ir.expression.UnaryPlusExpression;
-import ligma.enums.DataType;
-import ligma.enums.Operator;
-import ligma.exception.SemanticException;
-import ligma.generated.LigmaBaseVisitor;
-import ligma.generated.LigmaParser;
 import ligma.table.Descriptor;
 import ligma.table.SymbolTable;
 import lombok.extern.slf4j.Slf4j;
