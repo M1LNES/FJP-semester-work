@@ -223,10 +223,12 @@ public class StatementGenerator extends Generator {
 
         int afterForBody = getCurrentInstructionRow();
 
+        // Clear the counter
+        addInstruction(Instruction.INT, 0, -1);
+
         modifyInstructionAddress(beforeForBody, afterForBody + 1);
 
         SymbolTable.exitScope();
-
     }
 
     private void generateWhile(WhileLoop whileLoop) {
@@ -293,7 +295,7 @@ public class StatementGenerator extends Generator {
 
     private void generateRepeatUntil(RepeatUntilLoop repeatUntilLoop) {
         log.debug("Generating repeat until loop");
-        
+
         SymbolTable.enterScope(false);
 
         int repeatBodyStart = getCurrentInstructionRow();
