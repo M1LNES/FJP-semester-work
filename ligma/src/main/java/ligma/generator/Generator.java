@@ -3,7 +3,7 @@ package ligma.generator;
 import ligma.ast.function.Function;
 import ligma.enums.Instruction;
 import ligma.exception.GenerateException;
-import ligma.table.SymbolTableGeneration;
+import ligma.table.SymbolTableGenerator;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,15 +15,14 @@ import java.util.List;
 @Setter
 public abstract class Generator {
 
+    @Setter
+    protected static List<Function> functions;
     @Getter
     private static List<InstructionInfo> instructions = new ArrayList<>();
     @Setter
     private static BufferedWriter writer;
 
-    @Setter
-    protected static List<Function> functions;
-
-    protected static SymbolTableGeneration symbolTable = new SymbolTableGeneration();
+    protected static SymbolTableGenerator symbolTable = new SymbolTableGenerator();
 
     public abstract void generate();
 

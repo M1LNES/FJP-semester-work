@@ -10,8 +10,8 @@ public class UnaryMinusExpression extends Expression {
     private final Operator operator;
     private final Expression expression;
 
-    public UnaryMinusExpression(Operator operator, Expression expression, DataType type, int line) {
-        super(type, line);
+    public UnaryMinusExpression(Operator operator, Expression expression, DataType type) {
+        super(type);
         this.operator = operator;
         this.expression = expression;
     }

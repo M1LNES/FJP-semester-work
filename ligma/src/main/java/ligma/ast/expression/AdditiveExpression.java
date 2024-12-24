@@ -11,8 +11,8 @@ public class AdditiveExpression extends Expression {
     private final Expression left;
     private final Expression right;
 
-    public AdditiveExpression(Operator operator, Expression left, Expression right, DataType type, int line) {
-        super(type, line);
+    public AdditiveExpression(Operator operator, Expression left, Expression right, DataType type) {
+        super(type);
         this.operator = operator;
         this.left = left;
         this.right = right;

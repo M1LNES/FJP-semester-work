@@ -42,9 +42,6 @@ public class Scope {
             throw new IllegalArgumentException("Duplicate identifier: " + identifier);
         }
 
-        // Increment address in the current scope
-//        descriptor.setAddres(addressCounter++);
-
         descriptors.put(identifier, descriptor);
     }
 

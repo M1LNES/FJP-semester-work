@@ -11,8 +11,8 @@ public class LogicalExpression extends Expression {
     private final Expression left;
     private final Expression right;
 
-    public LogicalExpression(Operator operator, Expression left, Expression right, DataType type, int line) {
-        super(type, line);
+    public LogicalExpression(Operator operator, Expression left, Expression right, DataType type) {
+        super(type);
         this.operator = operator;
         this.left = left;
         this.right = right;

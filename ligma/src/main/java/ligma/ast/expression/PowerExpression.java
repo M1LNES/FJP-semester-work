@@ -11,8 +11,8 @@ public class PowerExpression extends Expression {
     private final Expression left;
     private final Expression right;
 
-    public PowerExpression(Operator operator, Expression left, Expression right, DataType type, int line) {
-        super(type, line);
+    public PowerExpression(Operator operator, Expression left, Expression right, DataType type) {
+        super(type);
         this.operator = operator;
         this.left = left;
         this.right = right;

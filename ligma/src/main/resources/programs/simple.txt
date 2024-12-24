@@ -1,5 +1,5 @@
 int b = foo(1);
-int c = ahoj(5);
+int c = les(5);
 
 func int foo(int x)
 {

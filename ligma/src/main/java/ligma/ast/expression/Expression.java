@@ -7,11 +7,9 @@ import lombok.Getter;
 public abstract class Expression {
 
     private final DataType type;
-    private final int line;
 
-    protected Expression(DataType type, int line) {
+    protected Expression(DataType type) {
         this.type = type;
-        this.line = line;
     }
 
 }

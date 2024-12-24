@@ -10,8 +10,8 @@ public class UnaryPlusExpression extends Expression {
     private final Operator operator;
     private final Expression expression;
 
-    public UnaryPlusExpression(Operator operator, Expression expression, DataType type, int line) {
-        super(type, line);
+    public UnaryPlusExpression(Operator operator, Expression expression, DataType type) {
+        super(type);
         this.operator = operator;
         this.expression = expression;
     }

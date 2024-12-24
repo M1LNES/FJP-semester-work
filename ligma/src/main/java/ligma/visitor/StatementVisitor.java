@@ -1,12 +1,10 @@
 package ligma.visitor;
 
 import ligma.ast.expression.Expression;
-import ligma.ast.function.FunctionParameter;
 import ligma.ast.statement.Assignment;
 import ligma.ast.statement.ConstantDefinition;
 import ligma.ast.statement.DoWhileLoop;
 import ligma.ast.statement.ForLoop;
-import ligma.ast.statement.FunctionCall;
 import ligma.ast.statement.IfStatement;
 import ligma.ast.statement.RepeatUntilLoop;
 import ligma.ast.statement.Statement;
@@ -25,11 +23,13 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 
 @Slf4j
 public class StatementVisitor extends LigmaBaseVisitor<Statement> {
 
-    private final ExpressionVisitor expressionVisitor = new ExpressionVisitor();
+    private static final ExpressionVisitor expressionVisitor = new ExpressionVisitor();
+    private static final FunctionVisitor functionVisitor = new FunctionVisitor();
 
     @Override
     public Statement visitVariableDefinition(LigmaParser.VariableDefinitionContext ctx) {
@@ -51,14 +51,7 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
         }
 
         // Add identifier with descriptor to the Symbol Table
-        Descriptor descriptor = VariableDescriptor.builder()
-                                                  .name(identifier)
-                                                  .type(dataType)
-                                                  .isConstant(false)
-                                                  .scopeLevel(SymbolTable.getCurrentScope().getLevel())
-                                                  .build();
-
-        SymbolTable.add(identifier, descriptor);
+        addVariableToSymbolTable(identifier, dataType, false);
 
         return new VariableDefinition(identifier, dataType, expression);
     }
@@ -83,14 +76,7 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
         }
 
         // Add identifier with descriptor to the Symbol Table
-        Descriptor descriptor = VariableDescriptor.builder()
-                                                  .name(identifier)
-                                                  .type(DataType.getDataType(type))
-                                                  .isConstant(true)
-                                                  .scopeLevel(SymbolTable.getCurrentScope().getLevel())
-                                                  .build();
-
-        SymbolTable.add(identifier, descriptor);
+        addVariableToSymbolTable(identifier, dataType, true);
 
         return new ConstantDefinition(identifier, dataType, expression);
     }
@@ -185,14 +171,7 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
         String identifier = ctx.IDENTIFIER().getText();
 
         // Add identifier with descriptor to the Symbol Table
-        Descriptor descriptor = VariableDescriptor.builder()
-                                                  .name(identifier)
-                                                  .type(DataType.INT)
-                                                  .isConstant(false)
-                                                  .scopeLevel(SymbolTable.getCurrentScope().getLevel())
-                                                  .build();
-
-        SymbolTable.add(identifier, descriptor);
+        addVariableToSymbolTable(identifier, DataType.INT, false);
 
         Expression expression = expressionVisitor.visit(ctx.expression(0));
         Expression toExpression = expressionVisitor.visit(ctx.expression(1));
@@ -230,9 +209,8 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
             throw new SemanticException("Condition must be a boolean type");
         }
 
-        List<Statement> statements = new ArrayList<>();
-
         // Traverse statements in the body
+        List<Statement> statements = new ArrayList<>();
         for (LigmaParser.StatementContext statementCtx : ctx.statement()) {
             statements.add(visit(statementCtx));
         }
@@ -245,96 +223,56 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
     @Override
     public Statement visitDoWhileLoop(LigmaParser.DoWhileLoopContext ctx) {
         log.debug("Do-while loop: {}", ctx.getText());
-
-        SymbolTable.enterScope(ScopeType.DO_WHILE.name());
-
-        // Traverse statements in the body
-        List<Statement> statements = new ArrayList<>();
-        for (LigmaParser.StatementContext statementCtx : ctx.statement()) {
-            statements.add(visit(statementCtx));
-        }
-
-        Expression expression = expressionVisitor.visit(ctx.expression());
-
-        // Expression must be of type boolean
-        if (expression.getType() != DataType.BOOLEAN) {
-            throw new SemanticException("Condition must be a boolean type");
-        }
-
-        SymbolTable.exitScope();
-
-        return new DoWhileLoop(statements, expression);
+        return processLoop(ctx.statement(), ctx.expression(), ScopeType.DO_WHILE, DoWhileLoop::new);
     }
 
     @Override
     public Statement visitRepeatUntilLoop(LigmaParser.RepeatUntilLoopContext ctx) {
         log.debug("Repeat-until loop: {}", ctx.getText());
+        return processLoop(ctx.statement(), ctx.expression(), ScopeType.REPEAT_UNTIL, RepeatUntilLoop::new);
+    }
 
-        SymbolTable.enterScope(ScopeType.REPEAT_UNTIL.name());
+    private Statement processLoop(
+        List<LigmaParser.StatementContext> statementCtxList,
+        LigmaParser.ExpressionContext expressionCtx,
+        ScopeType scopeType,
+        BiFunction<List<Statement>, Expression, Statement> loopConstructor
+    ) {
+        SymbolTable.enterScope(scopeType.name());
 
-        // Traverse statements in the body
-        List<Statement> statements = new ArrayList<>();
-        for (LigmaParser.StatementContext statementCtx : ctx.statement()) {
-            statements.add(visit(statementCtx));
-        }
+        // Traverse statements in the loop body
+        List<Statement> statements = statementCtxList.stream()
+                                                     .map(this::visit)
+                                                     .toList();
 
-        Expression expression = expressionVisitor.visit(ctx.expression());
+        // Parse the loop condition
+        Expression condition = expressionVisitor.visit(expressionCtx);
 
-        // Expression must be of type boolean
-        if (expression.getType() != DataType.BOOLEAN) {
+        // Validate that the condition is boolean
+        if (condition.getType() != DataType.BOOLEAN) {
             throw new SemanticException("Condition must be a boolean type");
         }
 
         SymbolTable.exitScope();
 
-        return new RepeatUntilLoop(statements, expression);
+        // Create and return the loop statement
+        return loopConstructor.apply(statements, condition);
     }
 
     @Override
     public Statement visitFunctionCall(LigmaParser.FunctionCallContext ctx) {
-        log.debug("Function call statement: {}", ctx.getText());
+        return functionVisitor.visitFunctionCall(ctx);
+    }
 
-        String identifier = ctx.IDENTIFIER().getText();
-        int line = ctx.getStart().getLine();
+    private void addVariableToSymbolTable(String identifier, DataType dataType, boolean isConstant) {
+        Descriptor descriptor = VariableDescriptor.builder()
+                                                  .name(identifier)
+                                                  .type(dataType)
+                                                  .isConstant(isConstant)
+                                                  .scopeLevel(SymbolTable.getCurrentScope().getLevel())
+                                                  .build();
 
-        Descriptor descriptor = SymbolTable.lookup(identifier);
-
-        // Function doesn't exist
-        if (descriptor == null) {
-            throw new SemanticException("Function " + identifier + " was not declared yet");
-        }
-        // Identifier is not a function
-        if (!(descriptor instanceof FunctionDescriptor funcDescriptor)) {
-            throw new SemanticException(identifier + " is not a function");
-        }
-
-        List<FunctionParameter> parameters = funcDescriptor.getParameters();
-        List<Expression> arguments = new ArrayList<>();
-
-        // Traverse arguments
-        for (LigmaParser.ExpressionContext expressionCtx : ctx.argumentList().expression()) {
-            arguments.add(expressionVisitor.visit(expressionCtx));
-        }
-
-        // Argument count doesn't match the parameter count
-        if (arguments.size() != parameters.size()) {
-            throw new SemanticException(
-                "Function '" + identifier + "' needs " + parameters.size() + " arguments" +
-                    " but " + arguments.size() + " was provided"
-            );
-        }
-
-        // Check that every argument type matches the parameter type
-        for (int i = 0; i < arguments.size(); i++) {
-            if (arguments.get(i).getType() != parameters.get(i).type()) {
-                throw new SemanticException(
-                    "Argument type is " + arguments.get(i).getType() +
-                        " but " + parameters.get(i).type() + " was expected"
-                );
-            }
-        }
-
-        return new FunctionCall(identifier, arguments);
+        SymbolTable.add(identifier, descriptor);
     }
 
 }
