@@ -88,6 +88,7 @@ public class SymbolTableGenerator {
 
         GeneratorScope currentScope = scopes.peek();
 
+        // Set address to the identifier
         int address = currentScope.getNextAddress();
         descriptor.setAddres(address);
 

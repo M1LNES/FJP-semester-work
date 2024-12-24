@@ -48,21 +48,6 @@ public class SymbolTable {
         scopes.put(scopeName, newScope); // Persist the scope
     }
 
-    public static void reenterScope(String scopeName) {
-        // The scope is anonymous -> add number suffix
-        if (ScopeType.isAnonymousScopeType(scopeName)) {
-            scopeName = generateScopeName(scopeName);
-        }
-
-        if (!scopes.containsKey(scopeName)) {
-            throw new IllegalArgumentException("Scope '" + scopeName + "' doesn't exist.");
-        }
-
-        log.debug("Reentering scope '{}'", scopeName);
-
-        currentScope = scopes.get(scopeName);
-    }
-
     /// Exit the current scope
     public static void exitScope() {
         if (currentScope == null) {
@@ -110,17 +95,6 @@ public class SymbolTable {
 
         // Descriptor not found
         return null;
-    }
-
-    /// Retrieve a scope by its name
-    public static Scope getScope(String scopeName) {
-        return scopes.get(scopeName);
-    }
-
-    public static void resetCounter() {
-        for (Map.Entry<String, Integer> scopeCounter : scopeCounters.entrySet()) {
-            scopeCounter.setValue(0);
-        }
     }
 
 }
