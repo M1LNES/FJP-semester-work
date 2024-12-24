@@ -1,0 +1,6 @@
+const boolean x = foo(5);
+
+func boolean foo(int n)
+{
+    return n >= 5;
+}
