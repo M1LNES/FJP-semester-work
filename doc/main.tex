@@ -74,7 +74,7 @@ Cílem práce bude vytvoření překladače zvoleného jazyka. Je možné inspir
 Překladač který bude umět tyto základní věci bude hodnocen deseti body. Další body (alespoň do minimálních 20) je možné získat na základě rozšíření, jsou rozděleny do dvou skupin, jednodušší za jeden bod a složitější za dva až tři body. Další rozšíření je možno doplnit po konzultaci, s ohodnocením podle odhadnuté náročnosti.
 \\\\Jednoduchá rozšíření (1 bod):
 \begin{itemize}
-    \item každý další typ cyklu (for, do .. while, while .. do, repeat .. unitl, foreach pro pole)
+    \item každý další typ cyklu (for, do .. while, while .. do, repeat .. until, foreach pro pole)
     \item else větev
     \item datový typ boolean a logické operace s ním
     \item datový typ real (s celočíselnými instrukcemi)
@@ -82,7 +82,7 @@ Překladač který bude umět tyto základní věci bude hodnocen deseti body. D
     \item rozvětvená podmínka (switch, case)
     \item násobné přiřazení (a = b = c = d = 3;)
     \item podmíněné přiřazení / ternární operátor (min = (a < b) ? a : b;)
-    \item paralelní přiřazení ({a, b, c, d} = {1, 2, 3, 4};)
+    \item paralelní přiřazení (\{a, b, c, d\} = \{1, 2, 3, 4\};)
     \item příkazy pro vstup a výstup (read, write - potřebuje vhodné instrukce které bude možné využít)
 \end{itemize}
 Složitěší rozšíření (2 body):
@@ -132,20 +132,17 @@ Vlastní interpret (řádkový, bez rozhraní, složitý alespoň jako rozšíř
 \section{Omezení jazyka}
 \begin{itemize}
     \item Při deklaraci proměnné je třeba vždy nastavit hodnotu
-    \item Funkce musí být definovány v nejvrchnějším scopu
-    \item Funkce podporují pouze návratový typ int
     \item V hlavičce for cyklu se musí deklarovat proměnná
     \item Podporované datové typy proměnných: int, boolean
-    \item Podporovaná aritmetika pro boolean - AND, OR, negace, závorky, ==, !=
-    \item Příkazy musí končit středníkem
-    \item Funkce musí být definovány až pod samotnými příkazy
-    \item Pouze jednořádkové komentáře ( // komentář)
+    \item Podporovaná aritmetika pro boolean - \&\&, ||, !, (), ==, !=
+    \item Funkce musí být definovány až pod samotnými příkazy v nejvrchnějším scopu
+    \item Jednořádkové komentáře (\texttt{// komentář}) či vnořené (\texttt{/* komentář */})
     \item Identifikátor nesmí obsahovat speciální znaky (kromě \_ ) a začínat číslem
 \end{itemize}
 
 \section{Konstrukce jazyka}
 
-\subsection{Povinná}
+\subsection{Povinné}
 
 \subsubsection{Definice celočíselných proměnných}
 \begin{lstlisting}[]
@@ -296,7 +293,75 @@ func int foo(int a) {
 }
 \end{lstlisting}
 
+\chapter{Implementace}
+
 \chapter{Testování}
+Projekt obsahuje sadu automatických testů, které testují lexikální, syntakickou či sémantickou analýzu.
+Všechny testy (celkem TODO scénářů) jsou automaticky spouštěné při vytváření výsledného
+\texttt{.jar} souboru pomocí skriptu \texttt{run.sh} (případně pro platformu Windows \texttt{run.bat}).
+
+\section{Lexikální analýza}
+Testy pro lexikální analýzu spouští třída \texttt{ExpressionLexicalTest}. Obsahuje celkem TODO negativních testů, které validují správnou funkčnost
+lexikální analýzy. Testovací soubory se nachází v adresáři \texttt{/src/test/resources/lexical}.
+\section{Syntaktická analýza}
+Testy pro syntaktickou analýzu spouští třída \texttt{ExpressionSyntaxTest}. Obsahuje celkem TODO testů (pozitivních + negativních). Testovací
+soubory se nachází v adresáři \texttt{/src/test/resources/syntax}. Důraz u negativních testů byl kladen zejména na provádění neplatných operací 
+(např. chybějící operandy/operátory) či používání neplatných instrukcí. 
+\section{Sémantická analýza}
+Testy pro sémantickou analýzu spouští třída \texttt{ExpressionSemanticTest}. Obsahuje celkem TODO testů (pozitivních + negativních).
+Testovací soubory se nachází v adresáři \texttt{/src/test/resources/semantic}.
+\section{Generování PL/0 instrukcí}
+Ukázkové zdrojové kódy přeložené do instrukční sady \texttt{PL/0} se nachází v adresáři \texttt{/src/main/resources} - složka \texttt{/programs}
+pro zdrojové kódy Ligmy, složka \texttt{/output} pro vygenerované \texttt{PL/0} instrukce.
+
+\chapter{Uživatelská dokumentace}
+\subsection{Prerekvizity}
+Pro úspěšné přeložení je vyžadováno:
+\begin{itemize}
+    \item Java verze 23 (kvůli podpoře markdown komentářů)
+    \item Maven verze 3.9.9
+\end{itemize}
+
+\subsection{Překlad a spouštění}
+Pro překlad přejděte do adresáře \texttt{ligma} a spusťte skript \texttt{run.sh} (případně \texttt{run.bat}).
+
+\setwinprompt{C:/Users/pavlicekj/ligma}
+\begin{console}{Překlad a vytvoření spustitelného souboru}
+`\winprompt` run.bat
+
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ----------------< ligma:ligma >-------
+[INFO] Building ligma 1.0
+[INFO]   from pom.xml
+[INFO] ----------------[ jar ]---------------
+
+......
+......
+
+[INFO] --------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] --------------------------------------
+[INFO] Total time:  12.525 s
+[INFO] Finished at: 2024-12-24T21:13:47+01:00
+[INFO] --------------------------------------
+\end{console}
+
+Skripty spustí příkaz \texttt{mvn clean install}, který stáhne veškeré potřebné knihovny, přeloží projekt (vytvoří adresář \texttt{target}
+s přeloženými soubory), následně spustí testy a vytvoří finální soubor \texttt{ligma.jar} ve složce \texttt{target}. 
+Následně se spustí ukázkový program a vygeneruje soubor s \texttt{PL/0} instrukcemi.
+
+Program následně můžete spouštět pomocí příkazu 
+
+\setwinprompt{C:/Users/pavlicekj/ligma/target}
+\begin{console}{Spuštění programu}
+`\winprompt` java -jar ligma.jar <input-file> <output-file>
+\end{console}
+, kde \texttt{<input-file>} je cesta k souboru se zdrojovým kódem jazyka Ligma a \texttt{<output-file>} je výsledný soubor
+s \texttt{PL/0} instrukcemi.
+
+
+
 
 \chapter{Závěr}
 
