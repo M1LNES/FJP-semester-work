@@ -41,11 +41,39 @@ public class FunctionGenerator extends Generator {
         String identifier = functionCall.getIdentifier();
         List<Expression> arguments = functionCall.getArguments();
 
+        // Find function to generate
+        Function function = functions.stream()
+                                     .filter(fun -> fun.name().equals(identifier))
+                                     .findFirst()
+                                     .orElseThrow(() -> new GenerateException("Function " + identifier + " not found"));
+
+        List<FunctionParameter> parameters = function.parameters();
+
+        // Argument count is not the same as parameter count
+        if (arguments.size() != parameters.size()) {
+            throw new GenerateException(
+                "Function '" + identifier + "' needs " + parameters.size() + " arguments" +
+                " but " + arguments.size() + " was provided"
+            );
+        }
+
         // Allocate space for the return value
         addInstruction(Instruction.INT, 0, 1);
 
         // Generate arguments
-        for (Expression argument : arguments) {
+        for (int i = 0; i < arguments.size(); i++) {
+            Expression argument = arguments.get(i);
+            FunctionParameter parameter = parameters.get(i);
+
+            // Argument and parameter have different types
+            if (argument.getType() != parameter.type()) {
+                throw new GenerateException(
+                    "Argument type is " + arguments.get(i).getType() +
+                    " but " + parameters.get(i).type() + " was expected"
+                );
+            }
+
+            // Generate argument
             expressionGenerator.setExpression(argument);
             expressionGenerator.generate();
         }
@@ -72,12 +100,6 @@ public class FunctionGenerator extends Generator {
 
         int jmpIndex = getCurrentInstructionRow();
         int functionBodyIndex = getCurrentInstructionRow();
-
-        // Find function to generate
-        Function function = functions.stream()
-                                     .filter(fun -> fun.name().equals(identifier))
-                                     .findFirst()
-                                     .orElseThrow(() -> new GenerateException("Function " + identifier + " not found"));
 
         // Generate function body
         generateFunction(function);

@@ -1,36 +1,5 @@
-// For Loop: Summing numbers from 1 to 9
-int sum = 0;  // address 3
+int result = computeSum(5, 10);
 
-for (int i = 1 to 10) {
-    sum = sum + i;
-}
-
-// While Loop: Doubling a value until it exceeds 1000
-int value = 1;  // address 4
-
-while (value <= 1000) {
-    value = value * 2;
-}
-
-// Do-While Loop: Subtracting from product until it's less than 10
-int product = 100;  // address 5
-
-do {
-    product = product - 5;
-} while (product >= 10);
-
-// Repeat-Until Loop: Increment counter until it reaches 10
-int counter = 0;  // address 6
-
-repeat {
-    counter = counter + 1;
-} until (counter == 10);
-
-// Nested Loops: Generating a multiplication table
-int result = 0; // address 7
-
-for (int i = 1 to 5) {
-    for (int j = 1 to 5) {
-        result = i * j;
-    }
+func int computeSum(int a, int b) {
+    return a + b;
 }
