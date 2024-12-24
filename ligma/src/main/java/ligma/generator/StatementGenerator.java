@@ -14,6 +14,7 @@ import ligma.ir.statement.Statement;
 import ligma.ir.statement.VariableDefinition;
 import ligma.ir.statement.WhileLoop;
 import ligma.table.Descriptor;
+import ligma.table.SymbolTable;
 import ligma.table.VariableDescriptor;
 import lombok.Setter;
 
@@ -56,7 +57,7 @@ public class StatementGenerator extends Generator {
                                                   .isConstant(false)
                                                   .build();
 
-        symbolTable.add(identifier, descriptor);
+        SymbolTable.add(identifier, descriptor);
 
         // Allocate space for the variable
         addInstruction(Instruction.INT, 0, 1);
@@ -66,7 +67,7 @@ public class StatementGenerator extends Generator {
         expressionGenerator.generate();
 
         // Save the result of the expression to the allocated space
-        addInstruction(Instruction.STO, symbolTable.getLevel(identifier), descriptor.getAddres());
+        addInstruction(Instruction.STO, SymbolTable.getLevel(identifier), descriptor.getAddres());
     }
 
     private void generateConstantDefinition(ConstantDefinition constDef) {
@@ -79,7 +80,7 @@ public class StatementGenerator extends Generator {
                                                   .isConstant(false)
                                                   .build();
 
-        symbolTable.add(identifier, descriptor);
+        SymbolTable.add(identifier, descriptor);
 
         // Allocate space for the variable
         addInstruction(Instruction.INT, 0, 1);
@@ -102,10 +103,10 @@ public class StatementGenerator extends Generator {
 
         for (int i = 0; i < allIdentifiers.size(); i++) {
             String identifier = allIdentifiers.get(i);
-            Descriptor descriptor = symbolTable.lookup(identifier);
+            Descriptor descriptor = SymbolTable.lookup(identifier);
 
             // Store the value of the expression to the given identifier
-            addInstruction(Instruction.STO, symbolTable.getLevel(identifier), descriptor.getAddres());
+            addInstruction(Instruction.STO, SymbolTable.getLevel(identifier), descriptor.getAddres());
 
             // Return the expression value on the top of the stack
             if (i != allIdentifiers.size() - 1) {
@@ -115,7 +116,7 @@ public class StatementGenerator extends Generator {
     }
 
     private void generateIfStatement(IfStatement ifStatement) {
-        symbolTable.enterScope(false);
+        SymbolTable.enterScope(false);
 
         // Evaluate the condition of the 'if' statement
         Expression expression = ifStatement.getExpression();
@@ -136,7 +137,7 @@ public class StatementGenerator extends Generator {
         // Later we can modify the '-1' to the correct address
         addInstruction(Instruction.JMP, 0, -1);
 
-        symbolTable.exitScope();
+        SymbolTable.exitScope();
 
         int afterIfRow = getCurrentInstructionRow();
 
@@ -145,7 +146,7 @@ public class StatementGenerator extends Generator {
         // Set the address of JMC to the first instruction of the 'else'
         modifyInstructionAddress(beforeIfRow, afterIfRow + 1);
 
-        symbolTable.enterScope(false);
+        SymbolTable.enterScope(false);
 
         // Generate all statements in the 'if' body
         List<Statement> elseStatements = ifStatement.getElseStatements();
@@ -156,11 +157,11 @@ public class StatementGenerator extends Generator {
 
         modifyInstructionAddress(beforeElseRow, afterElseRow + 1);
 
-        symbolTable.exitScope();
+        SymbolTable.exitScope();
     }
 
     private void generateForLoop(ForLoop forLoop) {
-        symbolTable.enterScope(false);
+        SymbolTable.enterScope(false);
 
         String identifier = forLoop.getIdentifier();
         Descriptor descriptor = VariableDescriptor.builder()
@@ -169,7 +170,7 @@ public class StatementGenerator extends Generator {
                                                   .isConstant(false)
                                                   .build();
 
-        symbolTable.add(identifier, descriptor);
+        SymbolTable.add(identifier, descriptor);
 
         addInstruction(Instruction.INT, 0, 1);
 
@@ -178,11 +179,11 @@ public class StatementGenerator extends Generator {
         expressionGenerator.setExpression(expression);
         expressionGenerator.generate();
 
-        addInstruction(Instruction.STO, symbolTable.getLevel(identifier), descriptor.getAddres());
+        addInstruction(Instruction.STO, SymbolTable.getLevel(identifier), descriptor.getAddres());
 
         int startIndex = getCurrentInstructionRow();
 
-        addInstruction(Instruction.LOD, symbolTable.getLevel(identifier), descriptor.getAddres());
+        addInstruction(Instruction.LOD, SymbolTable.getLevel(identifier), descriptor.getAddres());
 
         // Evaluate the assigment int the 'for' header
         Expression toExpression = forLoop.getToExpression();
@@ -203,10 +204,10 @@ public class StatementGenerator extends Generator {
         generate();
 
         // Default increment by 1
-        addInstruction(Instruction.LOD, symbolTable.getLevel(identifier), descriptor.getAddres());
+        addInstruction(Instruction.LOD, SymbolTable.getLevel(identifier), descriptor.getAddres());
         addInstruction(Instruction.LIT, 0, 1);
         addInstruction(Instruction.OPR, 0, 2);
-        addInstruction(Instruction.STO, symbolTable.getLevel(identifier), descriptor.getAddres());
+        addInstruction(Instruction.STO, SymbolTable.getLevel(identifier), descriptor.getAddres());
 
         addInstruction(Instruction.JMP, 0, startIndex + 1);
 
@@ -214,12 +215,12 @@ public class StatementGenerator extends Generator {
 
         modifyInstructionAddress(beforeForBody, afterForBody + 1);
 
-        symbolTable.exitScope();
+        SymbolTable.exitScope();
 
     }
 
     private void generateWhile(WhileLoop whileLoop) {
-        symbolTable.enterScope(false);
+        SymbolTable.enterScope(false);
 
         int beforeCondition = getCurrentInstructionRow();
 
@@ -245,11 +246,11 @@ public class StatementGenerator extends Generator {
         // Modify the JMC instruction to jump over the 'while' body
         modifyInstructionAddress(jmcIndex, getCurrentInstructionRow() + 1);
 
-        symbolTable.exitScope();
+        SymbolTable.exitScope();
     }
 
     private void generateDoWhile(DoWhileLoop doWhileLoop) {
-        symbolTable.enterScope(false);
+        SymbolTable.enterScope(false);
 
         int doBodyStart = getCurrentInstructionRow();
 
@@ -273,11 +274,11 @@ public class StatementGenerator extends Generator {
 
         modifyInstructionAddress(jmcIndex, getCurrentInstructionRow() + 1);
 
-        symbolTable.exitScope();
+        SymbolTable.exitScope();
     }
 
     private void generateRepeatUntil(RepeatUntilLoop repeatUntilLoop) {
-        symbolTable.enterScope(false);
+        SymbolTable.enterScope(false);
 
         int repeatBodyStart = getCurrentInstructionRow();
 
@@ -294,7 +295,7 @@ public class StatementGenerator extends Generator {
         // Jump to the start of the 'repeat-until' body
         addInstruction(Instruction.JMC, 0, repeatBodyStart + 1);
 
-        symbolTable.exitScope();
+        SymbolTable.exitScope();
     }
 
     private void generateFunctionCall(FunctionCall functionCall) {

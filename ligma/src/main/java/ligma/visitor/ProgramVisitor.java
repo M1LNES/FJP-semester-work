@@ -1,6 +1,5 @@
 package ligma.visitor;
 
-import ligma.enums.ScopeType;
 import ligma.generated.LigmaBaseVisitor;
 import ligma.generated.LigmaParser;
 import ligma.ir.function.Function;
@@ -22,7 +21,7 @@ public class ProgramVisitor extends LigmaBaseVisitor<Program> {
     public Program visitProgram(LigmaParser.ProgramContext ctx) {
         log.debug("Program");
 
-        SymbolTable.enterScope(ScopeType.GLOBAL.name());
+        SymbolTable.enterScope(false);
 
         // statements
         List<Statement> statements = new ArrayList<>();

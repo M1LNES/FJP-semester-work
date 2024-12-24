@@ -33,7 +33,7 @@ public class FunctionVisitor extends LigmaBaseVisitor<Object> {
 
         DataType returnType = DataType.getDataType(type);
 
-        SymbolTable.enterScope(identifier);
+        SymbolTable.enterScope(true);
 
         List<FunctionParameter> parameters = new ArrayList<>();
         List<Statement> statements = new ArrayList<>();
@@ -131,7 +131,7 @@ public class FunctionVisitor extends LigmaBaseVisitor<Object> {
                                                        .name(paramName)
                                                        .type(paramDataType)
                                                        .isConstant(false)
-                                                       .scopeLevel(SymbolTable.getCurrentScope().getLevel())
+                                                       .scopeLevel(SymbolTable.getLevel(paramName))
                                                        .build();
 
         SymbolTable.add(paramName, paramDescriptor);
@@ -141,7 +141,7 @@ public class FunctionVisitor extends LigmaBaseVisitor<Object> {
         Descriptor descriptor = FunctionDescriptor.builder()
                                                   .name(identifier)
                                                   .type(returnType)
-                                                  .scopeLevel(SymbolTable.getCurrentScope().getLevel())
+                                                  .scopeLevel(SymbolTable.getLevel(identifier))
                                                   .parameters(parameters)
                                                   .statements(statements)
                                                   .returnExpression(returnExpr)
