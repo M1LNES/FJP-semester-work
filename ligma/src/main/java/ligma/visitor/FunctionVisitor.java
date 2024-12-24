@@ -90,6 +90,10 @@ public class FunctionVisitor extends LigmaBaseVisitor<Object> {
     }
 
     private void processFunctionParameters(LigmaParser.FunctionDefinitionContext ctx, List<FunctionParameter> parameters) {
+        if (ctx.parameterList() == null) {
+            return;
+        }
+
         for (LigmaParser.ParameterContext parameterCtx : ctx.parameterList().parameter()) {
             String paramName = parameterCtx.IDENTIFIER().getText();
             String paramType = parameterCtx.dataType().getText();
@@ -133,6 +137,10 @@ public class FunctionVisitor extends LigmaBaseVisitor<Object> {
         LigmaParser.FunctionCallContext ctx,
         java.util.function.Function<List<Expression>, T> resultBuilder
     ) {
+        if (ctx.argumentList() == null) {
+            return resultBuilder.apply(new ArrayList<>());
+        }
+
         List<Expression> arguments = ctx.argumentList()
                                         .expression()
                                         .stream()
