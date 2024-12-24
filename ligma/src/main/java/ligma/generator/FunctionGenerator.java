@@ -1,10 +1,10 @@
 package ligma.generator;
 
-import ligma.ast.expression.Expression;
-import ligma.ast.function.Callable;
-import ligma.ast.function.Function;
-import ligma.ast.function.FunctionParameter;
-import ligma.ast.statement.Statement;
+import ligma.ir.expression.Expression;
+import ligma.ir.function.Callable;
+import ligma.ir.function.Function;
+import ligma.ir.function.FunctionParameter;
+import ligma.ir.statement.Statement;
 import ligma.enums.Instruction;
 import ligma.exception.GenerateException;
 import ligma.table.Descriptor;
@@ -95,8 +95,7 @@ public class FunctionGenerator extends Generator {
         List<Statement> statements = function.statements();
         Expression returnExpression = function.returnExpression();
 
-        // Add function and its parameters to the symbol table
-        addFunctionToTheSymbolTable(function);
+        // Add parameters to the symbol table
         addParametersToTheSymbolTable(parameters);
 
         // Add function address to the map
@@ -105,8 +104,6 @@ public class FunctionGenerator extends Generator {
 
         // Allocate space for the Activation Record
         addInstruction(Instruction.INT, 0, 3);
-        // Allocate space for the parameters
-        addInstruction(Instruction.INT, 0, parameters.size());
 
         // Load arguments
         for (int i = parameters.size(); i > 0; i--) {
@@ -122,7 +119,7 @@ public class FunctionGenerator extends Generator {
         expressionGenerator.generate();
 
         // Store the return value to the allocated space from the function caller
-        addInstruction(Instruction.STO, 0, -(statements.size() + 1));
+        addInstruction(Instruction.STO, 0, -(parameters.size() + 1));
 
         // Return
         addInstruction(Instruction.RET, 0, 0);
@@ -133,7 +130,6 @@ public class FunctionGenerator extends Generator {
     private void addFunctionToTheSymbolTable(Function function) {
         Descriptor functionDescriptor = FunctionDescriptor.builder()
             .type(function.returnType())
-            .scopeLevel(symbolTable.getCurrentScopeLevel())
             .statements(function.statements())
             .parameters(function.parameters())
             .returnExpression(function.returnExpression())
@@ -146,9 +142,8 @@ public class FunctionGenerator extends Generator {
         for (FunctionParameter parameter : parameters) {
             Descriptor paramDescriptor = VariableDescriptor.builder()
                 .name(parameter.name())
-                .isConstant(false)
                 .type(parameter.type())
-                .scopeLevel(symbolTable.getCurrentScopeLevel())
+                .isConstant(false)
                 .build();
 
             symbolTable.add(parameter.name(), paramDescriptor);

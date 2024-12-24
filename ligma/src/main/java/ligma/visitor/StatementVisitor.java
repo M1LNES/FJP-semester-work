@@ -1,15 +1,16 @@
 package ligma.visitor;
 
-import ligma.ast.expression.Expression;
-import ligma.ast.statement.Assignment;
-import ligma.ast.statement.ConstantDefinition;
-import ligma.ast.statement.DoWhileLoop;
-import ligma.ast.statement.ForLoop;
-import ligma.ast.statement.IfStatement;
-import ligma.ast.statement.RepeatUntilLoop;
-import ligma.ast.statement.Statement;
-import ligma.ast.statement.VariableDefinition;
-import ligma.ast.statement.WhileLoop;
+import ligma.ir.expression.Expression;
+import ligma.ir.statement.Assignment;
+import ligma.ir.statement.ConstantDefinition;
+import ligma.ir.statement.DoWhileLoop;
+import ligma.ir.statement.ForLoop;
+import ligma.ir.statement.FunctionCall;
+import ligma.ir.statement.IfStatement;
+import ligma.ir.statement.RepeatUntilLoop;
+import ligma.ir.statement.Statement;
+import ligma.ir.statement.VariableDefinition;
+import ligma.ir.statement.WhileLoop;
 import ligma.enums.DataType;
 import ligma.enums.ScopeType;
 import ligma.exception.SemanticException;

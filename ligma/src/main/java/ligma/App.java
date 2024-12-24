@@ -1,6 +1,6 @@
 package ligma;
 
-import ligma.ast.program.Program;
+import ligma.ir.program.Program;
 import ligma.generated.LigmaLexer;
 import ligma.generated.LigmaParser;
 import ligma.generator.Generator;

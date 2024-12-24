@@ -1,16 +1,16 @@
 package ligma.generator;
 
-import ligma.ast.expression.Expression;
-import ligma.ast.statement.Assignment;
-import ligma.ast.statement.ConstantDefinition;
-import ligma.ast.statement.DoWhileLoop;
-import ligma.ast.statement.ForLoop;
-import ligma.ast.statement.FunctionCall;
-import ligma.ast.statement.IfStatement;
-import ligma.ast.statement.RepeatUntilLoop;
-import ligma.ast.statement.Statement;
-import ligma.ast.statement.VariableDefinition;
-import ligma.ast.statement.WhileLoop;
+import ligma.ir.expression.Expression;
+import ligma.ir.statement.Assignment;
+import ligma.ir.statement.ConstantDefinition;
+import ligma.ir.statement.DoWhileLoop;
+import ligma.ir.statement.ForLoop;
+import ligma.ir.statement.FunctionCall;
+import ligma.ir.statement.IfStatement;
+import ligma.ir.statement.RepeatUntilLoop;
+import ligma.ir.statement.Statement;
+import ligma.ir.statement.VariableDefinition;
+import ligma.ir.statement.WhileLoop;
 import ligma.enums.DataType;
 import ligma.enums.Instruction;
 import ligma.exception.GenerateException;
@@ -51,15 +51,10 @@ public class StatementGenerator extends Generator {
         String identifier = varDef.getIdentifier();
         Expression expression = varDef.getExpression();
 
-        if (symbolTable.isIdentifierInCurrentScope(identifier)) {
-            throw new GenerateException("Identifier '" + identifier + "' was already declared");
-        }
-
         Descriptor descriptor = VariableDescriptor.builder()
                                                   .name(identifier)
                                                   .type(varDef.getType())
                                                   .isConstant(false)
-                                                  .scopeLevel(symbolTable.getCurrentScopeLevel())
                                                   .build();
 
         symbolTable.add(identifier, descriptor);
@@ -72,22 +67,17 @@ public class StatementGenerator extends Generator {
         expressionGenerator.generate();
 
         // Save the result of the expression to the allocated space
-        addInstruction(Instruction.STO, symbolTable.getLevel(descriptor), descriptor.getAddres());
+        addInstruction(Instruction.STO, symbolTable.getLevel(identifier), descriptor.getAddres());
     }
 
     private void generateConstantDefinition(ConstantDefinition constDef) {
         String identifier = constDef.getIdentifier();
         Expression expression = constDef.getExpression();
 
-        if (symbolTable.isIdentifierInCurrentScope(identifier)) {
-            throw new GenerateException("Identifier '" + identifier + "' was already declared");
-        }
-
         Descriptor descriptor = VariableDescriptor.builder()
                                                   .name(identifier)
                                                   .type(constDef.getType())
                                                   .isConstant(false)
-                                                  .scopeLevel(symbolTable.getCurrentScopeLevel())
                                                   .build();
 
         symbolTable.add(identifier, descriptor);
@@ -112,10 +102,11 @@ public class StatementGenerator extends Generator {
         List<String> allIdentifiers = assignment.getAllIdentifiers();
 
         for (int i = 0; i < allIdentifiers.size(); i++) {
-            Descriptor descriptor = symbolTable.lookup(allIdentifiers.get(i));
+            String identifier = allIdentifiers.get(i);
+            Descriptor descriptor = symbolTable.lookup(identifier);
 
             // Store the value of the expression to the given identifier
-            addInstruction(Instruction.STO, symbolTable.getLevel(descriptor), descriptor.getAddres());
+            addInstruction(Instruction.STO, symbolTable.getLevel(identifier), descriptor.getAddres());
 
             // Return the expression value on the top of the stack
             if (i != allIdentifiers.size() - 1) {
@@ -168,17 +159,18 @@ public class StatementGenerator extends Generator {
 
         symbolTable.exitScope();
     }
+
     private void generateForLoop(ForLoop forLoop) {
         symbolTable.enterScope(false);
 
+        String identifier = forLoop.getIdentifier();
         Descriptor descriptor = VariableDescriptor.builder()
-                                                  .name(forLoop.getIdentifier())
+                                                  .name(identifier)
                                                   .type(DataType.INT)
                                                   .isConstant(false)
-                                                  .scopeLevel(symbolTable.getCurrentScopeLevel())
                                                   .build();
 
-        symbolTable.add(forLoop.getIdentifier(), descriptor);
+        symbolTable.add(identifier, descriptor);
 
         addInstruction(Instruction.INT, 0, 1);
 
@@ -187,18 +179,18 @@ public class StatementGenerator extends Generator {
         expressionGenerator.setExpression(expression);
         expressionGenerator.generate();
 
-        addInstruction(Instruction.STO, symbolTable.getLevel(descriptor), descriptor.getAddres());
+        addInstruction(Instruction.STO, symbolTable.getLevel(identifier), descriptor.getAddres());
 
         int startIndex = getCurrentInstructionRow();
 
-        addInstruction(Instruction.LOD, symbolTable.getLevel(descriptor), descriptor.getAddres());
+        addInstruction(Instruction.LOD, symbolTable.getLevel(identifier), descriptor.getAddres());
 
         // Evaluate the assigment int the 'for' header
         Expression toExpression = forLoop.getToExpression();
         expressionGenerator.setExpression(toExpression);
         expressionGenerator.generate();
 
-        // Compare
+        // Compare '<'
         addInstruction(Instruction.OPR, 0, 10);
 
         // Jump over the 'for' body
@@ -212,10 +204,10 @@ public class StatementGenerator extends Generator {
         generate();
 
         // Default increment by 1
-        addInstruction(Instruction.LOD, symbolTable.getLevel(descriptor), descriptor.getAddres());
+        addInstruction(Instruction.LOD, symbolTable.getLevel(identifier), descriptor.getAddres());
         addInstruction(Instruction.LIT, 0, 1);
         addInstruction(Instruction.OPR, 0, 2);
-        addInstruction(Instruction.STO, symbolTable.getLevel(descriptor), descriptor.getAddres());
+        addInstruction(Instruction.STO, symbolTable.getLevel(identifier), descriptor.getAddres());
 
         addInstruction(Instruction.JMP, 0, startIndex + 1);
 

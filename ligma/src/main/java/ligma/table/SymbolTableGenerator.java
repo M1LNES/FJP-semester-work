@@ -12,6 +12,7 @@ import java.util.Map;
 @Setter
 class GeneratorScope {
     private final Map<String, Descriptor> descriptors = new HashMap<>();
+    private boolean isNamed;
     private int nextAddress;
     private int level;
 
@@ -59,8 +60,9 @@ public class SymbolTableGenerator {
 
         // Scope is a function
         if (isNamedScope) {
+            scope.setNamed(true);
             scope.setNextAddress(START_ADDRESS);
-            scope.setLevel(scope.getLevel() + 1);
+            scope.setLevel(0);
         }
         // Scope is not a function
         else {
@@ -101,26 +103,26 @@ public class SymbolTableGenerator {
     public Descriptor lookup(String identifier) {
         for (GeneratorScope scope : scopes) {
             if (scope.containsKey(identifier)) {
-                return scope.getDescriptors().get(identifier);
+                return scope.getDescriptor(identifier);
             }
         }
         return null; // Not found
     }
 
-    public int getLevel(Descriptor descriptor) {
-        return scopes.peek().getLevel() - descriptor.getScopeLevel();
-    }
+    public int getLevel(String identifier) {
+        int level = 0;
 
-    // Check if an identifier exists in the current scope
-    public boolean isIdentifierInCurrentScope(String identifier) {
-        if (scopes.isEmpty()) {
-            throw new IllegalStateException("No active scope to find the identifier in.");
+        for (GeneratorScope scope : scopes) {
+            if (scope.containsKey(identifier)) {
+                return level;
+            }
+            // Increment level for each named scope
+            if (scope.isNamed()) {
+                level++;
+            }
         }
-        return scopes.peek().containsKey(identifier);
-    }
 
-    public int getCurrentScopeLevel() {
-        return scopes.peek().getLevel();
+        return level;
     }
 
     public int getNextAddress() {

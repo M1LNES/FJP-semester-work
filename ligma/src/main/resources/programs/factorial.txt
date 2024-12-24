@@ -1,0 +1,18 @@
+int res = factorial(5);
+
+func int factorial(int n)
+{
+    int res = 1;
+
+    for (int i = 1 to n + 1)
+    {
+        res = calcResult(res, i);
+    }
+
+    return res;
+}
+
+func int calcResult(int res, int i)
+{
+    return res * i;
+}

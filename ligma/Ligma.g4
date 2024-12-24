@@ -76,7 +76,7 @@ statement
     | whileLoop
     | doWhileLoop
     | repeatUntilLoop
-    | functionCall SEMICOLON
+    | functionCall
     ;
 
 functionDefinition
@@ -146,7 +146,7 @@ repeatUntilLoop
     ;
 
 functionCall
-    : IDENTIFIER LPAREN argumentList? RPAREN
+    : IDENTIFIER LPAREN argumentList? RPAREN SEMICOLON?
     ;
 
 argumentList
