@@ -1,0 +1,55 @@
+// Variable and Constant Definitions
+int x = 5;
+boolean isActive = true;
+const int CONST_VAL = 100;
+
+// Assignments and Arithmetic Operations
+x = x + 10;
+int y = x * 2;
+y = y / 5 - 1;
+boolean isEqual = x == y;
+
+// Conditional Statements
+if (x > 10) {
+    int z = x + y;
+} else {
+    boolean isLess = x < 5;
+}
+
+// Nested if-else
+if (isActive) {
+    if (x > 50) {
+        x = x / 2;
+    } else {
+        x = x * 2;
+    }
+} else {
+    x = 0;
+}
+
+// Function Calls
+int result = computeSum(5, 10);
+boolean isValid = checkCondition(x, y);
+
+// Expressions with Logical Operators
+boolean complexCheck = (x > 5 && y < 10) || !isActive;
+
+// A Mix of Different Statements
+int counter = 0;
+while (counter < 10) {
+    counter = counter + 1;
+    x = x + counter;
+}
+
+repeat {
+    y = y - 1;
+} until (y == 0);
+
+// Function Definitions
+func int computeSum(int a, int b) {
+    return a + b;
+}
+
+func boolean checkCondition(int num1, int num2) {
+    return num1 > num2;
+}
