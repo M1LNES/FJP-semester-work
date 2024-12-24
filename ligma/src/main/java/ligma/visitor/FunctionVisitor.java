@@ -1,11 +1,11 @@
 package ligma.visitor;
 
-import ligma.ast.expression.Expression;
-import ligma.ast.expression.FunctionCallExpression;
-import ligma.ast.function.Function;
-import ligma.ast.function.FunctionParameter;
-import ligma.ast.statement.FunctionCall;
-import ligma.ast.statement.Statement;
+import ligma.ir.expression.Expression;
+import ligma.ir.expression.FunctionCallExpression;
+import ligma.ir.function.Function;
+import ligma.ir.function.FunctionParameter;
+import ligma.ir.statement.FunctionCall;
+import ligma.ir.statement.Statement;
 import ligma.enums.DataType;
 import ligma.exception.SemanticException;
 import ligma.generated.LigmaBaseVisitor;
@@ -71,22 +71,39 @@ public class FunctionVisitor extends LigmaBaseVisitor<Object> {
     public FunctionCall visitFunctionCall(LigmaParser.FunctionCallContext ctx) {
         log.debug("Function call statement: {}", ctx.getText());
         String identifier = ctx.IDENTIFIER().getText();
+        List<Expression> arguments = new ArrayList<>();
 
-        return processFunctionCall(
-            ctx,
-            arguments -> new FunctionCall(identifier, arguments)
-        );
+        LigmaParser.ArgumentListContext argumentListCtx = ctx.argumentList();
+
+        // Function call has some arguments
+        if (argumentListCtx != null && argumentListCtx.expression() != null) {
+            arguments = argumentListCtx.expression()
+                                       .stream()
+                                       .map(expressionVisitor::visit)
+                                       .toList();
+        }
+
+        return new FunctionCall(identifier, arguments);
     }
 
     @Override
     public FunctionCallExpression visitFunctionCallExpression(LigmaParser.FunctionCallExpressionContext ctx) {
         log.debug("Function call expression: {}", ctx.getText());
-        String identifier = ctx.functionCall().IDENTIFIER().getText();
+        LigmaParser.FunctionCallContext functionCallCtx = ctx.functionCall();
 
-        return processFunctionCall(
-            ctx.functionCall(),
-            arguments -> new FunctionCallExpression(DataType.INT, identifier, arguments)
-        );
+        String identifier = functionCallCtx.IDENTIFIER().getText();
+        List<Expression> arguments = new ArrayList<>();
+
+        // Function call has some arguments
+        if (functionCallCtx.argumentList() != null) {
+            arguments = functionCallCtx.argumentList()
+                                       .expression()
+                                       .stream()
+                                       .map(expressionVisitor::visit)
+                                       .toList();
+        }
+
+        return new FunctionCallExpression(DataType.INT, identifier, arguments);
     }
 
     private void processFunctionParameters(LigmaParser.FunctionDefinitionContext ctx, List<FunctionParameter> parameters) {
@@ -131,23 +148,6 @@ public class FunctionVisitor extends LigmaBaseVisitor<Object> {
                                                   .build();
 
         SymbolTable.add(identifier, descriptor);
-    }
-
-    private <T> T processFunctionCall(
-        LigmaParser.FunctionCallContext ctx,
-        java.util.function.Function<List<Expression>, T> resultBuilder
-    ) {
-        if (ctx.argumentList() == null) {
-            return resultBuilder.apply(new ArrayList<>());
-        }
-
-        List<Expression> arguments = ctx.argumentList()
-                                        .expression()
-                                        .stream()
-                                        .map(expressionVisitor::visit)
-                                        .toList();
-
-        return resultBuilder.apply(arguments);
     }
 
 }

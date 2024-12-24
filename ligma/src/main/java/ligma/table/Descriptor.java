@@ -15,7 +15,8 @@ public abstract class Descriptor {
     /// Data type / Return type (e.g., int, boolean).
     private DataType type;
     /// Scope level of the indentifier.
-    private int scopeLevel;
+    @Setter
+    private int level;
     /// Relative Address (to the current scope) in stack.
     @Setter
     private int addres;

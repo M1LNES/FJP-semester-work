@@ -1,8 +1,8 @@
 package ligma.table;
 
-import ligma.ast.expression.Expression;
-import ligma.ast.function.FunctionParameter;
-import ligma.ast.statement.Statement;
+import ligma.ir.expression.Expression;
+import ligma.ir.function.FunctionParameter;
+import ligma.ir.statement.Statement;
 import ligma.enums.DataType;
 import lombok.Builder;
 import lombok.Getter;

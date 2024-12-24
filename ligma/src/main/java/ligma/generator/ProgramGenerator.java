@@ -1,8 +1,8 @@
 package ligma.generator;
 
-import ligma.ast.function.Function;
-import ligma.ast.program.Program;
-import ligma.ast.statement.Statement;
+import ligma.ir.function.Function;
+import ligma.ir.program.Program;
+import ligma.ir.statement.Statement;
 import ligma.enums.Instruction;
 import lombok.RequiredArgsConstructor;
 
@@ -23,8 +23,8 @@ public class ProgramGenerator extends Generator {
         // Enter global scope
         symbolTable.enterScope(false);
 
-        List<Statement> statements = program.getStatements();
-        List<Function> functions = program.getFunctions();
+        List<Statement> statements = program.statements();
+        List<Function> functions = program.functions();
 
         // Set functions so that they can be called
         Generator.setFunctions(functions);

@@ -1,6 +1,6 @@
 package ligma.generator;
 
-import ligma.ast.function.Function;
+import ligma.ir.function.Function;
 import ligma.enums.Instruction;
 import ligma.exception.GenerateException;
 import ligma.table.SymbolTableGenerator;

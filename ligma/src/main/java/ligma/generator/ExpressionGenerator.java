@@ -1,18 +1,18 @@
 package ligma.generator;
 
-import ligma.ast.expression.AdditiveExpression;
-import ligma.ast.expression.ComparisonExpression;
-import ligma.ast.expression.Expression;
-import ligma.ast.expression.FunctionCallExpression;
-import ligma.ast.expression.Identifier;
-import ligma.ast.expression.Literal;
-import ligma.ast.expression.LogicalExpression;
-import ligma.ast.expression.MultiplicativeExpression;
-import ligma.ast.expression.NotExpression;
-import ligma.ast.expression.ParenthesizedExpression;
-import ligma.ast.expression.PowerExpression;
-import ligma.ast.expression.UnaryMinusExpression;
-import ligma.ast.expression.UnaryPlusExpression;
+import ligma.ir.expression.AdditiveExpression;
+import ligma.ir.expression.ComparisonExpression;
+import ligma.ir.expression.Expression;
+import ligma.ir.expression.FunctionCallExpression;
+import ligma.ir.expression.Identifier;
+import ligma.ir.expression.Literal;
+import ligma.ir.expression.LogicalExpression;
+import ligma.ir.expression.MultiplicativeExpression;
+import ligma.ir.expression.NotExpression;
+import ligma.ir.expression.ParenthesizedExpression;
+import ligma.ir.expression.PowerExpression;
+import ligma.ir.expression.UnaryMinusExpression;
+import ligma.ir.expression.UnaryPlusExpression;
 import ligma.enums.Instruction;
 import ligma.enums.Operator;
 import ligma.exception.GenerateException;
@@ -376,10 +376,7 @@ public class ExpressionGenerator extends Generator {
         String idenName = identifier.getName();
         Descriptor descriptor = symbolTable.lookup(idenName);
 
-        // TODO: Level is always 0 or 1 (0 = global scope level, 1 = funtion scope level)
-        // TODO: Level is calculated from 0, each depth (scope) that i need to traverse increments the level by 1
-
-        addInstruction(Instruction.LOD, symbolTable.getLevel(descriptor), descriptor.getAddres());
+        addInstruction(Instruction.LOD, symbolTable.getLevel(idenName), descriptor.getAddres());
     }
 
     private void generateLiteral(Literal<?> literal) {

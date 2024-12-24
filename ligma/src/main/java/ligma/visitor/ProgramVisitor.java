@@ -1,8 +1,8 @@
 package ligma.visitor;
 
-import ligma.ast.function.Function;
-import ligma.ast.program.Program;
-import ligma.ast.statement.Statement;
+import ligma.ir.function.Function;
+import ligma.ir.program.Program;
+import ligma.ir.statement.Statement;
 import ligma.enums.ScopeType;
 import ligma.generated.LigmaBaseVisitor;
 import ligma.generated.LigmaParser;
