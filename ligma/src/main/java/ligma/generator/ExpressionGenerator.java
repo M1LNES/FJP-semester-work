@@ -19,7 +19,9 @@ import ligma.ir.expression.UnaryPlusExpression;
 import ligma.table.Descriptor;
 import ligma.table.SymbolTable;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Setter
 public class ExpressionGenerator extends Generator {
 
@@ -52,6 +54,7 @@ public class ExpressionGenerator extends Generator {
     }
 
     private void generatePowerExpression(PowerExpression powerExpression) {
+        log.debug("Generating power expression");
         Expression left = powerExpression.getLeft();
         Expression right = powerExpression.getRight();
 
@@ -164,6 +167,7 @@ public class ExpressionGenerator extends Generator {
     }
 
     private void genUnaryMinusExpression(UnaryMinusExpression unaryMinusExpression) {
+        log.debug("Generating unary minus expression");
         Expression expressionUnary = unaryMinusExpression.getExpression();
         Operator operator = unaryMinusExpression.getOperator();
 
@@ -183,6 +187,7 @@ public class ExpressionGenerator extends Generator {
     }
 
     private void genNotExpression(NotExpression notExpression) {
+        log.debug("Generating not expression");
         Expression expressionNot = notExpression.getExpression();
         Operator operator = notExpression.getOperator();
 
@@ -203,6 +208,7 @@ public class ExpressionGenerator extends Generator {
     }
 
     private void genMultiplicativeExpression(MultiplicativeExpression multiplicativeExpression) {
+        log.debug("Generating multiplicative expression");
         Expression left = multiplicativeExpression.getLeft();
         Expression right = multiplicativeExpression.getRight();
 
@@ -242,6 +248,7 @@ public class ExpressionGenerator extends Generator {
     }
 
     private void genAdditiveExpression(AdditiveExpression additiveExpression) {
+        log.debug("Generating additive expression");
         Expression left = additiveExpression.getLeft();
         Expression right = additiveExpression.getRight();
 
@@ -272,6 +279,7 @@ public class ExpressionGenerator extends Generator {
     }
 
     private void genComparisonExpression(ComparisonExpression comparisonExpression) {
+        log.debug("Generating comparison expression");
         Expression left = comparisonExpression.getLeft();
         Expression right = comparisonExpression.getRight();
 
@@ -338,6 +346,7 @@ public class ExpressionGenerator extends Generator {
     }
 
     private void genLogicalExpression(LogicalExpression logicalExpression) {
+        log.debug("Generating logical expression");
         Expression left = logicalExpression.getLeft();
         Expression right = logicalExpression.getRight();
 

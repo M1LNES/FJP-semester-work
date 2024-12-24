@@ -17,9 +17,11 @@ import ligma.table.Descriptor;
 import ligma.table.SymbolTable;
 import ligma.table.VariableDescriptor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
+@Slf4j
 @Setter
 public class StatementGenerator extends Generator {
 
@@ -48,6 +50,7 @@ public class StatementGenerator extends Generator {
     }
 
     private void generateVariableDefinition(VariableDefinition varDef) {
+        log.debug("Generating variable definition");
         String identifier = varDef.getIdentifier();
         Expression expression = varDef.getExpression();
 
@@ -71,6 +74,7 @@ public class StatementGenerator extends Generator {
     }
 
     private void generateConstantDefinition(ConstantDefinition constDef) {
+        log.debug("Generating constant definition");
         String identifier = constDef.getIdentifier();
         Expression expression = constDef.getExpression();
 
@@ -94,6 +98,8 @@ public class StatementGenerator extends Generator {
     }
 
     private void generateAssignment(Assignment assignment) {
+        log.debug("Generating assignment");
+
         // Evaluate expression
         Expression expression = assignment.getExpression();
         expressionGenerator.setExpression(expression);
@@ -116,6 +122,8 @@ public class StatementGenerator extends Generator {
     }
 
     private void generateIfStatement(IfStatement ifStatement) {
+        log.debug("Generating if statement");
+
         SymbolTable.enterScope(false);
 
         // Evaluate the condition of the 'if' statement
@@ -161,6 +169,8 @@ public class StatementGenerator extends Generator {
     }
 
     private void generateForLoop(ForLoop forLoop) {
+        log.debug("Generating for loop");
+
         SymbolTable.enterScope(false);
 
         String identifier = forLoop.getIdentifier();
@@ -220,6 +230,8 @@ public class StatementGenerator extends Generator {
     }
 
     private void generateWhile(WhileLoop whileLoop) {
+        log.debug("Generating while loop");
+
         SymbolTable.enterScope(false);
 
         int beforeCondition = getCurrentInstructionRow();
@@ -250,6 +262,8 @@ public class StatementGenerator extends Generator {
     }
 
     private void generateDoWhile(DoWhileLoop doWhileLoop) {
+        log.debug("Generating do while loop");
+
         SymbolTable.enterScope(false);
 
         int doBodyStart = getCurrentInstructionRow();
@@ -278,6 +292,8 @@ public class StatementGenerator extends Generator {
     }
 
     private void generateRepeatUntil(RepeatUntilLoop repeatUntilLoop) {
+        log.debug("Generating repeat until loop");
+        
         SymbolTable.enterScope(false);
 
         int repeatBodyStart = getCurrentInstructionRow();
