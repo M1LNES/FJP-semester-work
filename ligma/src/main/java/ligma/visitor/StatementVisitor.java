@@ -6,6 +6,7 @@ import ligma.exception.SemanticException;
 import ligma.generated.LigmaBaseVisitor;
 import ligma.generated.LigmaParser;
 import ligma.ir.expression.Expression;
+import ligma.ir.expression.FunctionCallExpression;
 import ligma.ir.statement.Assignment;
 import ligma.ir.statement.ConstantDefinition;
 import ligma.ir.statement.DoWhileLoop;
@@ -46,8 +47,11 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
         Expression expression = expressionVisitor.visit(ctx.expression());
 
         // Type mismatch
-        if (dataType != expression.getType()) {
-            throw new SemanticException("Variable '" + identifier + "' is not of type " + dataType);
+        if (!(expression instanceof FunctionCallExpression) && dataType != expression.getType()) {
+            throw new SemanticException(
+                "Cannot assign the value to the variable '" + identifier
+                + "': type mismatch [" + dataType + ", " + expression.getType() + "]"
+            );
         }
 
         // Add identifier with descriptor to the Symbol Table
@@ -71,8 +75,11 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
         Expression expression = expressionVisitor.visit(ctx.variableDefinition().expression());
 
         // Type mismatch
-        if (dataType != expression.getType()) {
-            throw new SemanticException("Variable '" + identifier + "' is not of type " + dataType);
+        if (!(expression instanceof FunctionCallExpression) && dataType != expression.getType()) {
+            throw new SemanticException(
+                "Cannot assign the value to the constant variable '" + identifier
+                    + "': type mismatch [" + dataType + ", " + expression.getType() + "]"
+            );
         }
 
         // Add identifier with descriptor to the Symbol Table

@@ -8,7 +8,7 @@ import java.util.Deque;
 @Slf4j
 public class SymbolTable {
 
-    // Stack to manage nested scopes
+    /// Stack to manage nested scopes
     private static final Deque<Scope> scopes = new ArrayDeque<>();
 
     private static final int START_ADDRESS = 3;
