@@ -6,9 +6,11 @@ import ligma.ir.program.Program;
 import ligma.ir.statement.Statement;
 import ligma.table.SymbolTable;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 public class ProgramGenerator extends Generator {
 
@@ -16,6 +18,8 @@ public class ProgramGenerator extends Generator {
 
     @Override
     public void generate() {
+        log.debug("Generating program");
+
         // Jump to the first instruction of the program - always at line 1
         addInstruction(Instruction.JMP, 0, 1);
         // Allocate space for the Activation Record

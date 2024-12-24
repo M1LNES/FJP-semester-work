@@ -12,11 +12,13 @@ import ligma.table.SymbolTable;
 import ligma.table.VariableDescriptor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Setter
 @RequiredArgsConstructor
 public class FunctionGenerator extends Generator {
@@ -35,6 +37,7 @@ public class FunctionGenerator extends Generator {
     }
 
     private void generateFunctionCall(Callable functionCall) {
+        log.debug("Generating function call");
         String identifier = functionCall.getIdentifier();
         List<Expression> arguments = functionCall.getArguments();
 
@@ -87,6 +90,8 @@ public class FunctionGenerator extends Generator {
     }
 
     private void generateFunction(Function function) {
+        log.debug("Generating function");
+
         SymbolTable.enterScope(true);
 
         // Function info
@@ -125,6 +130,8 @@ public class FunctionGenerator extends Generator {
         addInstruction(Instruction.RET, 0, 0);
 
         SymbolTable.exitScope();
+
+        log.debug("Finished generating function");
     }
 
     private void addParametersToTheSymbolTable(List<FunctionParameter> parameters) {
