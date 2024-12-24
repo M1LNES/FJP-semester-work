@@ -1,9 +1,40 @@
 \documentclass[czech, oth, kiv, he, iso690numb, viewonly]{fasthesis}
 \usepackage[all]{hypcap} % \ref přesměruje uživatele na obrázek místo captionu obrázku
-\usepackage{minted2}
+\usepackage{minted}
 \usepackage{caption}
 \usepackage{sourcecodepro}
 \usepackage{amsmath}
+
+\lstdefinelanguage{Ligma}{
+  keywords={int, const, catch, continue, debugger, default, delete, do, else, false, finally, for, func, if, in, instanceof, new, null, return, switch, this, throw, true, try, typeof, var, void, while, with, repeat, until, boolean},
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]',
+  morestring=[b]",
+  ndkeywords={class, export, boolean, throw, implements, import, this},
+  keywordstyle=\color{blue}\bfseries,
+  ndkeywordstyle=\color{darkgray}\bfseries,
+  identifierstyle=\color{black},
+  commentstyle=\color{purple}\ttfamily,
+  stringstyle=\color{red}\ttfamily,
+  sensitive=true
+}
+
+\lstset{
+   language=Ligma,
+   backgroundcolor=\color{lightgray},
+   extendedchars=true,
+   basicstyle=\footnotesize\ttfamily,
+   showstringspaces=false,
+   showspaces=false,
+   numbers=left,
+   numberstyle=\footnotesize,
+   numbersep=9pt,
+   tabsize=2,
+   breaklines=true,
+   showtabs=false,
+   captionpos=b
+}
 
 \definecolor{codebg}{RGB}{240, 240, 240}
 
@@ -24,31 +55,256 @@
 \addbibresource{literatura.bib}
 
 \begin{document}
-    \frontpages[tm]
-    \tableofcontents
+\frontpages[tm]
+\tableofcontents
 
-    \chapter{Úvod}
 
-    \captionof{listing}{Ukázka kódu}
-    \label{lst:code_example}
-    \vspace{-0.4em}
-    \begin{minted}[fontsize=\footnotesize, linenos, numbersep=6pt, bgcolor=codebg]{cpp}
-// Residual calculation between actual and predicted values
-float residual(const float y_actual, const float y_predicted)
-{
-    return y_actual - y_predicted;
+\chapter{Zadání}
+Cílem práce bude vytvoření překladače zvoleného jazyka. Je možné inspirovat se jazykem PL/0, vybrat si podmnožinu nějakého existujícího jazyka nebo si navrhnout jazyk zcela vlastní. Dále je také potřeba zvolit si pro jakou architekturu bude jazyk překládán (doporučeny jsou instrukce PL/0, ale je možné zvolit jakoukoliv instrukční sadu pro kterou budete mít interpret).
+\\\\Jazyk musí mít minimálně následující konstrukce:
+\begin{itemize}
+    \item definice celočíselných proměnných
+    \item definice celočíselných konstant
+    \item přiřazení
+    \item základní aritmetiku a logiku (+, -, *, /, AND, OR, negace a závorky, operátory pro porovnání čísel)
+    \item cyklus (libovolný)
+    \item jednoduchou podmínku (if bez else)
+    \item definice podprogramu (procedura, funkce, metoda) a jeho volání
+\end{itemize}
+Překladač který bude umět tyto základní věci bude hodnocen deseti body. Další body (alespoň do minimálních 20) je možné získat na základě rozšíření, jsou rozděleny do dvou skupin, jednodušší za jeden bod a složitější za dva až tři body. Další rozšíření je možno doplnit po konzultaci, s ohodnocením podle odhadnuté náročnosti.
+\\\\Jednoduchá rozšíření (1 bod):
+\begin{itemize}
+    \item každý další typ cyklu (for, do .. while, while .. do, repeat .. unitl, foreach pro pole)
+    \item else větev
+    \item datový typ boolean a logické operace s ním
+    \item datový typ real (s celočíselnými instrukcemi)
+    \item datový typ string (s operátory pro spojování řětezců)
+    \item rozvětvená podmínka (switch, case)
+    \item násobné přiřazení (a = b = c = d = 3;)
+    \item podmíněné přiřazení / ternární operátor (min = (a < b) ? a : b;)
+    \item paralelní přiřazení ({a, b, c, d} = {1, 2, 3, 4};)
+    \item příkazy pro vstup a výstup (read, write - potřebuje vhodné instrukce které bude možné využít)
+\end{itemize}
+Složitěší rozšíření (2 body):
+\begin{itemize}
+    \item příkaz GOTO (pozor na vzdálené skoky)
+    \item datový typ ratio (s celočíselnými instrukcemi)
+    \item složený datový typ (Record)
+    \item pole a práce s jeho prvky
+    \item operátor pro porovnání řetězců
+    \item parametry předávané hodnotou
+    \item návratová hodnota podprogramu
+    \item objekty bez polymorfismu
+    \item anonymní vnitřní funkce (lambda výrazy)
+\end{itemize}
+Rozšíření vyžadující složitější instrukční sadu než má PL/0 (3 body):
+\begin{itemize}
+    \item dynamicky přiřazovaná paměť - práce s ukazateli
+    \item parametry předávané odkazem
+    \item objektové konstrukce s polymorfním chováním
+    \item instanceof operátor
+    \item anonymní vnitřní funkce (lambda výrazy) které lze předat jako parametr
+    \item mechanismus zpracování výjimek
+\end{itemize}
+Vlastní interpret (řádkový, bez rozhraní, složitý alespoň jako rozšířená PL/0) je za 6 bodů. 
+\\\\Kromě toho že by program měl fungovat se zohledňují i další věci, které mohou pozitivně nebo negativně ovlivnit bodování:
+\begin{itemize}
+    \item testování - tvorba rozumné automatické testovací sady +3 body (pro inspiraci hledejte test suit pro LLVM nebo se podívejte na Plum Hall testy, ale jde skutečně jen o inspiraci, stačí výrazně jednodušší řešení).
+    \item Kvalita dokumentace -x bodů až +2 body podle kvality a prohřešků (vynechaná gramatika, nesrozumitelné věty, příliš chyb a překlepů, bitmapové obrázky pro diagramy s kompresními artefakty, ...).
+    \item Vedení projektu v GITu -x bodů až +2 body podle důslednosti a struktury příspěvků.
+    \item Kvalita zdrojového textu -x bodů až +2 body podle obecně znýmách pravidel ze ZSWI, PPA a podobně (magická čísla, struktura programu a dekompozice problému, božské třídy a metody, ...)
+\end{itemize}
+
+\chapter{Návrh jazyka}
+
+\section{Zvolená rozšíření jazyka Ligma}
+\begin{itemize}
+    \item cyklus do-while 
+    \item cyklus for
+    \item cyklus repeat-until
+    \item datový typ boolean a logické operace s ním
+    \item else větev
+    \item násobné přiřazení (a = b = c = d = 3;)
+    \item parametry předávané hodnotou
+    \item návratová hodnota podprogramu
+\end{itemize}
+
+\section{Omezení jazyka}
+\begin{itemize}
+    \item Při deklaraci proměnné je třeba vždy nastavit hodnotu
+    \item Funkce musí být definovány v nejvrchnějším scopu
+    \item Funkce podporují pouze návratový typ int
+    \item V hlavičce for cyklu se musí deklarovat proměnná
+    \item Podporované datové typy proměnných: int, boolean
+    \item Podporovaná aritmetika pro boolean - AND, OR, negace, závorky, ==, !=
+    \item Příkazy musí končit středníkem
+    \item Funkce musí být definovány až pod samotnými příkazy
+    \item Pouze jednořádkové komentáře ( // komentář)
+    \item Identifikátor nesmí obsahovat speciální znaky (kromě \_ ) a začínat číslem
+\end{itemize}
+
+\section{Konstrukce jazyka}
+
+\subsection{Povinná}
+
+\subsubsection{Definice celočíselných proměnných}
+\begin{lstlisting}[]
+int a = 5;
+\end{lstlisting}
+
+
+\subsubsection{Definice celočíselných konstant}
+\begin{lstlisting}[]
+const int b = -8;
+\end{lstlisting}
+
+\subsubsection{Přiřazení}
+\begin{lstlisting}[]
+int a = 10;
+int b = a;
+\end{lstlisting}
+
+\subsubsection{Základní aritmetika a logika}
+Aritmetika:
+\begin{lstlisting}[]
+int a = 3 ^ 3;
+int b = 50 % 12;
+
+int c = a + b;
+int d = b - a;
+int e = b / a;
+int f = a * b;
+int g = ---a; 
+int h = ++a;   
+int i = (a + b - 10) * 5; 
+\end{lstlisting}
+Operátory pro porovnání:
+\begin{lstlisting}[]
+boolean a = 1 < 50;
+boolean b = 2 <= -5;
+boolean c = 5 >= 6;
+boolean d = 15 > 20;
+boolean e = 5 == 5;
+boolean f = 10 != 22;
+\end{lstlisting}
+
+\subsubsection{Cyklus - while}
+\begin{lstlisting}[]
+int a = 0;
+while (a < 10) {
+    a = a + 2;
 }
-    \end{minted}
+\end{lstlisting}
 
-    \chapter{Testování}
+\subsubsection{Podmínka if (bez else)}
+\begin{lstlisting}[]
+int a = 18;
+if (a != 0) {
+    a = a + 9;
+}
+\end{lstlisting}
 
-    \chapter{Závěr}
+\subsubsection{Definice funkce a její volání}
+\begin{lstlisting}[]
+int res = foo();
 
-    \appendix
+func int foo() {
+    return 10;
+}
+\end{lstlisting}
 
-    \printbibliography
+
+
+\subsection{Rozšiřující}
+
+\subsubsection{Cyklus do-while}
+\begin{lstlisting}[]
+int a = 10;
+do {
+    a = a + 8;
+} while (a < 50);
+\end{lstlisting}
+
+
+\subsubsection{Cyklus repeat-until}
+\begin{lstlisting}[]
+int a = 5;
+repeat {
+    a = a + 1;
+} until (a >= 10);
+\end{lstlisting}
+
+\subsubsection{Cyklus for}
+\begin{lstlisting}[]
+for (int a = 0 to 10) {
+    ...
+}
+\end{lstlisting}
+
+\subsubsection{Else větev}
+\begin{lstlisting}[]
+if (false) {
+    ...
+} else {
+    ...
+}
+\end{lstlisting}
+
+\subsubsection{Datový typ boolean a logické operace s ním}
+Aritmetika:
+\begin{lstlisting}[]
+boolean a = true;
+boolean b = false;
+
+boolean c = a && b;
+boolean d = a || b;
+boolean e = !a;
+boolean f = ((a || b) && b);
+\end{lstlisting}
+Operátory pro porovnání:
+\begin{lstlisting}[]
+boolean a = true == false;
+boolean b = true != false;
+\end{lstlisting}
+
+\subsubsection{Násobné přiřazení}
+\begin{lstlisting}[]
+int a = 5;
+int b = 6;
+int c = 10;
+int d = -10;
+
+b = a = d = c = -80;
+\end{lstlisting}
+
+\subsubsection{Parametry předávané hodnotou}
+\begin{lstlisting}[]  
+int res = foo(3,4);
     
-    \backmatter
-    \listoflistings
+func int foo(int a, int b) {
+    return a * b;
+}
+\end{lstlisting}
+
+\subsubsection{Návratová hodnota podprogramu}
+\begin{lstlisting}[]
+int num = 8;    
+int res = foo(num);
+
+func int foo(int a) {
+    return a - 1;
+}
+\end{lstlisting}
+
+\chapter{Testování}
+
+\chapter{Závěr}
+
+\appendix
+
+\printbibliography
+    
+\backmatter
+\listoflistings
 
 \end{document}
