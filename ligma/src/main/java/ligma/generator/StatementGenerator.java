@@ -1,7 +1,6 @@
 package ligma.generator;
 
 import ligma.ast.expression.Expression;
-import ligma.ast.function.Function;
 import ligma.ast.statement.Assignment;
 import ligma.ast.statement.ConstantDefinition;
 import ligma.ast.statement.DoWhileLoop;
@@ -208,8 +207,8 @@ public class StatementGenerator extends Generator {
         int beforeForBody = getCurrentInstructionRow();
 
         // Generate 'for' statements
-        List<Statement> statements = forLoop.getStatements();
-        setStatements(statements);
+        List<Statement> forStatements = forLoop.getStatements();
+        setStatements(forStatements);
         generate();
 
         // Default increment by 1

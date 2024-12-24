@@ -8,8 +8,8 @@ public class Literal<T> extends Expression {
 
     private final T value;
 
-    public Literal(T value, DataType type, int line) {
-        super(type, line);
+    public Literal(T value, DataType type) {
+        super(type);
         this.value = value;
     }
 

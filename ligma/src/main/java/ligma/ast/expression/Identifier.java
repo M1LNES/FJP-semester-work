@@ -8,8 +8,8 @@ public class Identifier extends Expression {
 
     private final String name;
 
-    public Identifier(String name, DataType type, int line) {
-        super(type, line);
+    public Identifier(String name, DataType type) {
+        super(type);
         this.name = name;
     }
 

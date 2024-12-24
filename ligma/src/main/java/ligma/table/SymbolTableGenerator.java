@@ -10,7 +10,7 @@ import java.util.Map;
 
 @Getter
 @Setter
-class MyScope {
+class GeneratorScope {
     private final Map<String, Descriptor> descriptors = new HashMap<>();
     private int nextAddress;
     private int level;
@@ -41,21 +41,21 @@ class MyScope {
 
 }
 
-public class SymbolTableGeneration {
+public class SymbolTableGenerator {
 
     // Stack to manage nested scopes
-    private final Deque<MyScope> scopes;
+    private final Deque<GeneratorScope> scopes;
 
     private static final int START_ADDRESS = 3;
 
     // Constructor to initialize the stack
-    public SymbolTableGeneration() {
+    public SymbolTableGenerator() {
         scopes = new ArrayDeque<>();
     }
 
     // Enter a new scope by pushing a new scope onto the stack
     public void enterScope(boolean isNamedScope) {
-        MyScope scope = new MyScope();
+        GeneratorScope scope = new GeneratorScope();
 
         // Scope is a function
         if (isNamedScope) {
@@ -89,7 +89,7 @@ public class SymbolTableGeneration {
             throw new IllegalStateException("No active scope to add the identifier to.");
         }
 
-        MyScope currentScope = scopes.peek();
+        GeneratorScope currentScope = scopes.peek();
 
         int address = currentScope.getNextAddress();
         descriptor.setAddres(address);
@@ -99,7 +99,7 @@ public class SymbolTableGeneration {
 
     // Lookup an identifier in the current scope hierarchy
     public Descriptor lookup(String identifier) {
-        for (MyScope scope : scopes) {
+        for (GeneratorScope scope : scopes) {
             if (scope.containsKey(identifier)) {
                 return scope.getDescriptors().get(identifier);
             }

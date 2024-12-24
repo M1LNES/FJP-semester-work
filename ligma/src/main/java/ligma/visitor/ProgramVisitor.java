@@ -15,8 +15,8 @@ import java.util.List;
 @Slf4j
 public class ProgramVisitor extends LigmaBaseVisitor<Program> {
 
-    private final StatementVisitor statementVisitor = new StatementVisitor();
-    private final FunctionDefinitionVisitor functionVisitor = new FunctionDefinitionVisitor();
+    private static final StatementVisitor statementVisitor = new StatementVisitor();
+    private static final FunctionVisitor functionVisitor = new FunctionVisitor();
 
     @Override
     public Program visitProgram(LigmaParser.ProgramContext ctx) {
@@ -24,17 +24,16 @@ public class ProgramVisitor extends LigmaBaseVisitor<Program> {
 
         SymbolTable.enterScope(ScopeType.GLOBAL.name());
 
-        List<Statement> statements = new ArrayList<>();
-        List<Function> functions = new ArrayList<>();
-
         // statements
+        List<Statement> statements = new ArrayList<>();
         for (LigmaParser.StatementContext statementContext : ctx.statement()) {
             statements.add(statementVisitor.visit(statementContext));
         }
 
         // functions
+        List<Function> functions = new ArrayList<>();
         for (LigmaParser.FunctionDefinitionContext functionContext : ctx.functionDefinition()) {
-            functions.add(functionVisitor.visit(functionContext));
+            functions.add((Function) functionVisitor.visit(functionContext));
         }
 
         SymbolTable.exitScope();

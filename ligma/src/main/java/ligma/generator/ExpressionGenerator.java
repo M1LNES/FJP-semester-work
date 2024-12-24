@@ -19,8 +19,6 @@ import ligma.exception.GenerateException;
 import ligma.table.Descriptor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Setter
 public class ExpressionGenerator extends Generator {
 

@@ -8,8 +8,8 @@ public class ParenthesizedExpression extends Expression {
 
     private final Expression expression;
 
-    public ParenthesizedExpression(Expression expression, DataType type, int line) {
-        super(type, line);
+    public ParenthesizedExpression(Expression expression, DataType type) {
+        super(type);
         this.expression = expression;
     }
 
