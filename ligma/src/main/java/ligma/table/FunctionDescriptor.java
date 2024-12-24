@@ -1,9 +1,9 @@
 package ligma.table;
 
+import ligma.enums.DataType;
 import ligma.ir.expression.Expression;
 import ligma.ir.function.FunctionParameter;
 import ligma.ir.statement.Statement;
-import ligma.enums.DataType;
 import lombok.Builder;
 import lombok.Getter;
 

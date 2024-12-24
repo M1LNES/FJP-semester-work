@@ -1,9 +1,9 @@
 package ligma.generator;
 
+import ligma.enums.Instruction;
 import ligma.ir.function.Function;
 import ligma.ir.program.Program;
 import ligma.ir.statement.Statement;
-import ligma.enums.Instruction;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;

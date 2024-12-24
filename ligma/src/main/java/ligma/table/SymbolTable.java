@@ -122,4 +122,5 @@ public class SymbolTable {
             scopeCounter.setValue(0);
         }
     }
+
 }

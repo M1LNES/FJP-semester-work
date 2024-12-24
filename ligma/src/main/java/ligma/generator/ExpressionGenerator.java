@@ -1,5 +1,8 @@
 package ligma.generator;
 
+import ligma.enums.Instruction;
+import ligma.enums.Operator;
+import ligma.exception.GenerateException;
 import ligma.ir.expression.AdditiveExpression;
 import ligma.ir.expression.ComparisonExpression;
 import ligma.ir.expression.Expression;
@@ -13,9 +16,6 @@ import ligma.ir.expression.ParenthesizedExpression;
 import ligma.ir.expression.PowerExpression;
 import ligma.ir.expression.UnaryMinusExpression;
 import ligma.ir.expression.UnaryPlusExpression;
-import ligma.enums.Instruction;
-import ligma.enums.Operator;
-import ligma.exception.GenerateException;
 import ligma.table.Descriptor;
 import lombok.Setter;
 
@@ -45,45 +45,63 @@ public class ExpressionGenerator extends Generator {
         }
     }
 
+    private void generateExpression(Expression expression) {
+        this.expression = expression;
+        generate();
+    }
+
     private void generatePowerExpression(PowerExpression powerExpression) {
         Expression left = powerExpression.getLeft();
         Expression right = powerExpression.getRight();
 
+        // Allocate space in the stack for the return value
+        addInstruction(Instruction.INT, 0, 1);
+
+        // Call the function
+        // Later we can modify the '-1' to the correct address
+        addInstruction(Instruction.CAL, 0, -1);
+
+        int calIndex = getCurrentInstructionRow();
+
+        // Jump over the function instructions
+        // Later we can modify the '-1' to the correct address
+        addInstruction(Instruction.JMP, 0, -1);
+
+        int jmpIndex = getCurrentInstructionRow();
+        int functionBodyIndex = getCurrentInstructionRow();
+
+        // Enter function scope
+        symbolTable.enterScope(true);
+
+        // Allocate space in the stack for the Activation Record and result
         addInstruction(Instruction.INT, 0, 4);
 
         // Initialize result to 1 (push 1 to stack)
         addInstruction(Instruction.LIT, 0, 1);
 
+        // Save 1 to the result
         int resultAddress = symbolTable.getNextAddress();
         addInstruction(Instruction.STO, 0, resultAddress);
 
         // Base
-        // Generate left expression
-        expression = left;
-        generate();
+        generateExpression(left);
 
+        // Save base address
         int baseAddress = symbolTable.getNextAddress();
-        addInstruction(Instruction.STO, 0, baseAddress);
 
         // Exponent
-        // Generate right expression
-        expression = right;
-        generate();
-
-        int exponentAddress = symbolTable.getNextAddress();
-        addInstruction(Instruction.STO, 0, exponentAddress);
+        generateExpression(right);
 
         // Exponent as counter
-        // Generate right expression
-        expression = right;
-        generate();
+        generateExpression(right);
 
         // Save counter to the stack
         int counterAddress = symbolTable.getNextAddress();
-        addInstruction(Instruction.STO, 0, counterAddress);
 
+        // Loop address of the power expression
         int loopStart = getCurrentInstructionRow();
 
+        // Load counter
         addInstruction(Instruction.LOD, 0, counterAddress);
 
         // Test if counter != 0
@@ -91,16 +109,20 @@ public class ExpressionGenerator extends Generator {
         addInstruction(Instruction.OPR, 0, 9);
 
         // Jump to the end of the power expression
+        // Later we can modify the '-1' to the correct address
         addInstruction(Instruction.JMC, 0, -1);
 
+        // JMC address
         int jmcIndex = getCurrentInstructionRow();
 
+        // Load result and base
         addInstruction(Instruction.LOD, 0, resultAddress);
         addInstruction(Instruction.LOD, 0, baseAddress);
 
         // Multiply top two values (result * base)
         addInstruction(Instruction.OPR, 0, 4);
 
+        // Save multiplication result to the result
         addInstruction(Instruction.STO, 0, resultAddress);
 
         // Subtract 1 from counter
@@ -108,19 +130,36 @@ public class ExpressionGenerator extends Generator {
         addInstruction(Instruction.LIT, 0, 1);
         addInstruction(Instruction.OPR, 0, 3);
 
+        // Save new counter
         addInstruction(Instruction.STO, 0, counterAddress);
 
         // Jump back to loop
         addInstruction(Instruction.JMP, 0, loopStart + 1);
 
+        // Address of the last loop instruction
         int loopEnd = getCurrentInstructionRow();
 
+        // Set the JMC address
         modifyInstructionAddress(jmcIndex, loopEnd + 1);
 
         // Clean the result of JMC, base and exponent
         addInstruction(Instruction.INT, 0, -3);
 
-        symbolTable.decrementCurrentScopeNextAddress(3);
+        // Save the result of the power expression to the allocated space
+        addInstruction(Instruction.STO, 0, -1);
+
+        // Return from function
+        addInstruction(Instruction.RET, 0, 0);
+
+        // Exit function scope
+        symbolTable.exitScope();
+
+        // Address of the last function instruction
+        int afterFunctionBodyIndex = getCurrentInstructionRow();
+
+        // Modify the CAL and JMP addresses
+        modifyInstructionAddress(calIndex, functionBodyIndex + 1);
+        modifyInstructionAddress(jmpIndex, afterFunctionBodyIndex + 1);
     }
 
     private void genUnaryMinusExpression(UnaryMinusExpression unaryMinusExpression) {
@@ -129,11 +168,13 @@ public class ExpressionGenerator extends Generator {
 
         switch (operator) {
             case SUB -> {
+                // Add 0 to the top of the stack
                 addInstruction(Instruction.LIT, 0, 0);
 
-                expression = expressionUnary;
-                generate();
+                // Generate expression
+                generateExpression(expressionUnary);
 
+                // Subtract the 0 and expression
                 addInstruction(Instruction.OPR, 0, 3);
             }
             default -> {}
@@ -150,16 +191,11 @@ public class ExpressionGenerator extends Generator {
                 addInstruction(Instruction.LIT, 0, 1);
 
                 // Add boolean to the top of the stack
-                expression = expressionNot;
-                generate();
+                generateExpression(expressionNot);
 
-                // Add the values <1;2>
-                addInstruction(Instruction.OPR, 0, 2);
-
-                // Add 1 to the top of the stack
-                addInstruction(Instruction.LIT, 0, 1);
-                // Are they equal ?
-                addInstruction(Instruction.OPR, 0, 8);
+                addInstruction(Instruction.OPR, 0, 2); // Add the values <1;2>
+                addInstruction(Instruction.LIT, 0, 1); // Add 1 to the top of the stack
+                addInstruction(Instruction.OPR, 0, 8); // Are they equal ?
             }
             default -> {}
         }
@@ -175,40 +211,28 @@ public class ExpressionGenerator extends Generator {
         switch (operator) {
             case MUL -> {
                 // Generate left expression
-                expression = left;
-                generate();
-
+                generateExpression(left);
                 // Generate right expression
-                expression = right;
-                generate();
+                generateExpression(right);
 
-                // Multiply the values on top of the stack
                 // left * right
                 addInstruction(Instruction.OPR, 0, 4);
             }
             case DIV -> {
                 // Generate left expression
-                expression = left;
-                generate();
-
+                generateExpression(left);
                 // Generate right expression
-                expression = right;
-                generate();
+                generateExpression(right);
 
-                // Divide the values on top of the stack
                 // left / right
                 addInstruction(Instruction.OPR, 0, 5);
             }
             case MOD -> {
                 // Generate left expression
-                expression = left;
-                generate();
-
+                generateExpression(left);
                 // Generate right expression
-                expression = right;
-                generate();
+                generateExpression(right);
 
-                // Module of the values on top of the stack
                 // left % right
                 addInstruction(Instruction.OPR, 0, 6);
             }
@@ -226,27 +250,19 @@ public class ExpressionGenerator extends Generator {
         switch (operator) {
             case ADD -> {
                 // Generate left expression
-                expression = left;
-                generate();
-
+                generateExpression(left);
                 // Generate right expression
-                expression = right;
-                generate();
+                generateExpression(right);
 
-                // Add the values on top of the stack
                 // left + right
                 addInstruction(Instruction.OPR, 0, 2);
             }
             case SUB -> {
                 // Generate left expression
-                expression = left;
-                generate();
-
+                generateExpression(left);
                 // Generate right expression
-                expression = right;
-                generate();
+                generateExpression(right);
 
-                // Subtract the values on top of the stack
                 // left - right
                 addInstruction(Instruction.OPR, 0, 3);
             }
@@ -264,68 +280,56 @@ public class ExpressionGenerator extends Generator {
         switch (operator) {
             case EQ -> {
                 // Generate left expression
-                expression = left;
-                generate();
-
+                generateExpression(left);
                 // Generate right expression
-                expression = right;
-                generate();
+                generateExpression(right);
 
+                // left == right
                 addInstruction(Instruction.OPR, 0, 8);
             }
             case NEQ -> {
                 // Generate left expression
-                expression = left;
-                generate();
-
+                generateExpression(left);
                 // Generate right expression
-                expression = right;
-                generate();
+                generateExpression(right);
 
+                // left != right
                 addInstruction(Instruction.OPR, 0, 9);
             }
             case GT -> {
                 // Generate left expression
-                expression = left;
-                generate();
-
+                generateExpression(left);
                 // Generate right expression
-                expression = right;
-                generate();
+                generateExpression(right);
 
+                // left > right
                 addInstruction(Instruction.OPR, 0, 12);
             }
             case LT -> {
                 // Generate left expression
-                expression = left;
-                generate();
-
+                generateExpression(left);
                 // Generate right expression
-                expression = right;
-                generate();
+                generateExpression(right);
 
+                // left < right
                 addInstruction(Instruction.OPR, 0, 10);
             }
             case GTE -> {
                 // Generate left expression
-                expression = left;
-                generate();
-
+                generateExpression(left);
                 // Generate right expression
-                expression = right;
-                generate();
+                generateExpression(right);
 
+                // left >= right
                 addInstruction(Instruction.OPR, 0, 11);
             }
             case LTE -> {
                 // Generate left expression
-                expression = left;
-                generate();
-
+                generateExpression(left);
                 // Generate right expression
-                expression = right;
-                generate();
+                generateExpression(right);
 
+                // left <= right
                 addInstruction(Instruction.OPR, 0, 13);
             }
             default -> {}
@@ -342,12 +346,9 @@ public class ExpressionGenerator extends Generator {
         switch (operator) {
             case AND -> {
                 // Generate left expression
-                expression = left;
-                generate();
-
+                generateExpression(left);
                 // Generate right expression
-                expression = right;
-                generate();
+                generateExpression(right);
 
                 // left && right
                 addInstruction(Instruction.OPR, 0, 4); // Multiply
@@ -356,16 +357,13 @@ public class ExpressionGenerator extends Generator {
             }
             case OR -> {
                 // Generate left expression
-                expression = left;
-                generate();
-
+                generateExpression(left);
                 // Generate right expression
-                expression = right;
-                generate();
+                generateExpression(right);
 
                 // left || right
-                addInstruction(Instruction.OPR, 0, 2); // Add both values
-                addInstruction(Instruction.LIT, 0, 1); // Add 0 to the top of the stack
+                addInstruction(Instruction.OPR, 0, 2);  // Add both values
+                addInstruction(Instruction.LIT, 0, 1);  // Add 1 to the top of the stack
                 addInstruction(Instruction.OPR, 0, 11); // Is the result >= 1 ?
             }
             default -> {}

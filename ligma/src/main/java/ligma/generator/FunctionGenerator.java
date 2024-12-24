@@ -1,14 +1,13 @@
 package ligma.generator;
 
+import ligma.enums.Instruction;
+import ligma.exception.GenerateException;
 import ligma.ir.expression.Expression;
 import ligma.ir.function.Callable;
 import ligma.ir.function.Function;
 import ligma.ir.function.FunctionParameter;
 import ligma.ir.statement.Statement;
-import ligma.enums.Instruction;
-import ligma.exception.GenerateException;
 import ligma.table.Descriptor;
-import ligma.table.FunctionDescriptor;
 import ligma.table.VariableDescriptor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -125,17 +124,6 @@ public class FunctionGenerator extends Generator {
         addInstruction(Instruction.RET, 0, 0);
 
         symbolTable.exitScope();
-    }
-
-    private void addFunctionToTheSymbolTable(Function function) {
-        Descriptor functionDescriptor = FunctionDescriptor.builder()
-            .type(function.returnType())
-            .statements(function.statements())
-            .parameters(function.parameters())
-            .returnExpression(function.returnExpression())
-            .build();
-
-        symbolTable.add(function.name(), functionDescriptor);
     }
 
     private void addParametersToTheSymbolTable(List<FunctionParameter> parameters) {

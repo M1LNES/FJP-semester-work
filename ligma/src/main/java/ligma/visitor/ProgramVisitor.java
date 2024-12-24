@@ -1,11 +1,11 @@
 package ligma.visitor;
 
-import ligma.ir.function.Function;
-import ligma.ir.program.Program;
-import ligma.ir.statement.Statement;
 import ligma.enums.ScopeType;
 import ligma.generated.LigmaBaseVisitor;
 import ligma.generated.LigmaParser;
+import ligma.ir.function.Function;
+import ligma.ir.program.Program;
+import ligma.ir.statement.Statement;
 import ligma.table.SymbolTable;
 import lombok.extern.slf4j.Slf4j;
 
