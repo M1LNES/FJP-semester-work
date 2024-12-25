@@ -1,9 +1,21 @@
-### JetBrains IDE ###
-.idea
+### Ligma ###
 /ligma/.mvn
 /ligma/target
 /ligma/src/main/java/ligma/generated/*
-/doc/texmf
+/ligma/ligma.jar
+
+### doc ###
+/doc/*
+!/doc/main.tex
+!/doc/main.pdf
+!/doc/literatura.bib
+!/doc/fasthesis.cls
+!/doc/latexmkrc
+!/doc/images
+!/doc/img
+
+### JetBrains IDE ###
+.idea
 
 ### VSCode ###
 .vscode/*

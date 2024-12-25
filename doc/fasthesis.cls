@@ -917,7 +917,7 @@
 					\draw (\FASThesis@auxdim@lx, -77mm)%
 						node{\hbox to \textwidth{%
 							\GTAmerica@Place\ifx\FASThesis@style\c@fullcolor\color{FASThesis@FASColor}\else\color{black}\fi%
-								\MakeUppercase{\FASThesis@place}\hfil{}\FASThesis@year}};
+								\MakeUppercase{\FASThesis@place}\hfil{}\FASThesis@day. \FASThesis@month. \FASThesis@year}};
 				\end{tikzpicture}%
 			};%
 		\end{tikzpicture}
