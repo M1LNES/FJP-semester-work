@@ -7,6 +7,7 @@ import ligma.generated.LigmaBaseVisitor;
 import ligma.generated.LigmaParser;
 import ligma.ir.expression.Expression;
 import ligma.ir.expression.FunctionCallExpression;
+import ligma.ir.function.Callable;
 import ligma.ir.statement.Assignment;
 import ligma.ir.statement.ConstantDefinition;
 import ligma.ir.statement.DoWhileLoop;
@@ -120,7 +121,7 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
                 case null -> throw new SemanticException("Variable " + iden + " was not declared yet");
                 default -> {
                     // Type mismatch
-                    if (descriptor.getType() != expression.getType()) {
+                    if (!(expression instanceof Callable) && descriptor.getType() != expression.getType()) {
                         throw new SemanticException("Variable '" + iden + "' is not of type " + expression.getType());
                     }
                 }

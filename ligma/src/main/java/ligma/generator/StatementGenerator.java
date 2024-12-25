@@ -4,6 +4,7 @@ import ligma.enums.DataType;
 import ligma.enums.Instruction;
 import ligma.exception.GenerateException;
 import ligma.ir.expression.Expression;
+import ligma.ir.function.Callable;
 import ligma.ir.statement.Assignment;
 import ligma.ir.statement.ConstantDefinition;
 import ligma.ir.statement.DoWhileLoop;
@@ -54,10 +55,11 @@ public class StatementGenerator extends Generator {
         log.debug("Generating variable definition");
         String identifier = varDef.getIdentifier();
         Expression expression = varDef.getExpression();
+        DataType dataType = varDef.getType();
 
         Descriptor descriptor = VariableDescriptor.builder()
                                                   .name(identifier)
-                                                  .type(varDef.getType())
+                                                  .type(dataType)
                                                   .isConstant(false)
                                                   .build();
 
@@ -69,6 +71,12 @@ public class StatementGenerator extends Generator {
         // Put the result of the expression on the top of the stack
         expressionGenerator.setExpression(expression);
         expressionGenerator.generate();
+
+        // If its a function -> set data type to a function return type
+        if (expression instanceof Callable callable) {
+            DataType functionReturnType = getFunctionReturnType(callable.getIdentifier());
+            expression.setType(functionReturnType);
+        }
 
         // Check data types (needed because of function return types)
         validateAssignmentType(descriptor, expression);
@@ -97,6 +105,12 @@ public class StatementGenerator extends Generator {
         expressionGenerator.setExpression(expression);
         expressionGenerator.generate();
 
+        // If its a function -> set data type to a function return type
+        if (expression instanceof Callable callable) {
+            DataType functionReturnType = getFunctionReturnType(callable.getIdentifier());
+            expression.setType(functionReturnType);
+        }
+
         // Check data types (needed because of function return types)
         validateAssignmentType(descriptor, expression);
 
@@ -117,6 +131,12 @@ public class StatementGenerator extends Generator {
         for (int i = 0; i < allIdentifiers.size(); i++) {
             String identifier = allIdentifiers.get(i);
             Descriptor descriptor = SymbolTable.lookup(identifier);
+
+            // If its a function -> set data type to a function return type
+            if (expression instanceof Callable callable) {
+                DataType functionReturnType = getFunctionReturnType(callable.getIdentifier());
+                expression.setType(functionReturnType);
+            }
 
             // Check data types (needed because of function return types)
             validateAssignmentType(descriptor, expression);
@@ -155,11 +175,14 @@ public class StatementGenerator extends Generator {
         // Later we can modify the '-1' to the correct address
         addInstruction(Instruction.JMP, 0, -1);
 
-        SymbolTable.exitScope();
-
         int afterIfRow = getCurrentInstructionRow();
 
         int beforeElseRow = getCurrentInstructionRow();
+
+        // Clear the scope variables
+        addInstruction(Instruction.INT, 0, -SymbolTable.getCurrentScopeSize());
+
+        SymbolTable.exitScope();
 
         // Set the address of JMC to the first instruction of the 'else'
         modifyInstructionAddress(beforeIfRow, afterIfRow + 1);
@@ -174,6 +197,9 @@ public class StatementGenerator extends Generator {
         int afterElseRow = getCurrentInstructionRow();
 
         modifyInstructionAddress(beforeElseRow, afterElseRow + 1);
+
+        // Clear the scope variables
+        addInstruction(Instruction.INT, 0, -SymbolTable.getCurrentScopeSize());
 
         SymbolTable.exitScope();
     }
@@ -233,10 +259,10 @@ public class StatementGenerator extends Generator {
 
         int afterForBody = getCurrentInstructionRow();
 
-        // Clear the counter
-        addInstruction(Instruction.INT, 0, -1);
-
         modifyInstructionAddress(beforeForBody, afterForBody + 1);
+
+        // Clear the scope variables
+        addInstruction(Instruction.INT, 0, -SymbolTable.getCurrentScopeSize());
 
         SymbolTable.exitScope();
     }
@@ -263,6 +289,9 @@ public class StatementGenerator extends Generator {
         List<Statement> whileStatements = whileLoop.getStatements();
         setStatements(whileStatements);
         generate();
+
+        // Clear the scope variables
+        addInstruction(Instruction.INT, 0, -SymbolTable.getCurrentScopeSize());
 
         // Jump to the first address in the 'while' body
         addInstruction(Instruction.JMP, 0, beforeCondition + 1);
@@ -296,9 +325,15 @@ public class StatementGenerator extends Generator {
 
         int jmcIndex = getCurrentInstructionRow();
 
+        // Clear the scope variables
+        addInstruction(Instruction.INT, 0, -SymbolTable.getCurrentScopeSize());
+
         addInstruction(Instruction.JMP, 0, doBodyStart + 1);
 
         modifyInstructionAddress(jmcIndex, getCurrentInstructionRow() + 1);
+
+        // Clear the scope variables
+        addInstruction(Instruction.INT, 0, -SymbolTable.getCurrentScopeSize());
 
         SymbolTable.exitScope();
     }
@@ -314,6 +349,9 @@ public class StatementGenerator extends Generator {
         List<Statement> doWhileStatements = repeatUntilLoop.getStatements();
         setStatements(doWhileStatements);
         generate();
+
+        // Clear the scope variables
+        addInstruction(Instruction.INT, 0, -SymbolTable.getCurrentScopeSize());
 
         // Evaluate the condition
         Expression expression = repeatUntilLoop.getExpression();

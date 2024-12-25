@@ -1,13 +1,15 @@
 package ligma.ir.expression;
 
 import ligma.enums.DataType;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 @Getter
-@RequiredArgsConstructor
+@Setter
+@AllArgsConstructor
 public abstract class Expression {
 
-    private final DataType type;
+    private DataType type;
 
 }
