@@ -136,7 +136,6 @@ Vlastní interpret (řádkový, bez rozhraní, složitý alespoň jako rozšíř
     \item Podporované datové typy proměnných: int, boolean
     \item Podporovaná aritmetika pro boolean - \&\&, ||, !, (), ==, !=
     \item Funkce musí být definovány až pod samotnými příkazy v nejvrchnějším scopu
-    \item Jednořádkové komentáře (\texttt{// komentář}) či vnořené (\texttt{/* komentář */})
     \item Identifikátor nesmí obsahovat speciální znaky (kromě \_ ) a začínat číslem
 \end{itemize}
 
@@ -164,16 +163,16 @@ int b = a;
 \subsubsection{Základní aritmetika a logika}
 Aritmetika:
 \begin{lstlisting}[]
-int a = 3 ^ 3;
-int b = 50 % 12;
+int a = 3;
+int b = 50;
 
 int c = a + b;
 int d = b - a;
 int e = b / a;
 int f = a * b;
 int g = ---a; 
-int h = ++a;   
-int i = (a + b - 10) * 5; 
+int h = +a;   
+int i = (a + b - 10) % 5; 
 \end{lstlisting}
 Operátory pro porovnání:
 \begin{lstlisting}[]
@@ -293,12 +292,56 @@ func int foo(int a) {
 }
 \end{lstlisting}
 
+\subsection{Vlastní}
+
+\subsubsection{Mocnina}
+Exponent mocniny musí být nezáporné celé číslo - interval <0;n>.
+\begin{lstlisting}[]
+int a = 8 ^ 3;    
+\end{lstlisting}
+
+\subsubsection{Komentáře}
+\begin{lstlisting}[]
+// Tohle je jednoradkovy komentar
+
+/*
+Tohle je vnoreny komentar
+*/
+\end{lstlisting}
+
 \chapter{Implementace}
+K vytvoření překladače jazyka Ligma je použit nástroj ANTLR. Zdrojové soubory se nachází v adresáři
+\texttt{/ligma/src/main/java/ligma}, soubor s předpisem gramatiky v \texttt{/ligma}. Syntaxe jazyka
+připomíná kombinaci JavaScriptu a ANSI C.
+
+\section{Gramatika}
+Gramatika jazyka definovaná v souboru \texttt{Ligma.g4} popisuje lexikální a syntaktická pravidla pro překladač. 
+Obsahuje pravidla pro klíčová slova, datové typy, literály, operátory a struktury, jako jsou cykly, 
+podmínky, funkce a přiřazení hodnot. Lexikální část gramatiky (\texttt{lexer rules}) rozpoznává jednotlivé tokeny, 
+zatímco syntaktická část (\texttt{parser rules}) určuje hierarchii a strukturu příkazů. 
+Gramatika je navržena tak, aby umožnila parsování komplexních výrazů včetně operátorů s různou prioritou. 
+Tento soubor tvoří základ pro generování parsovacího stromu, který je dále využíván v překladači.
+
+\section{Struktura projektu}
+\begin{itemize}
+    \item \texttt{enums} - výčtové typy (\texttt{PL/0} instrukce, operátory, scopy, datové typy)
+    \item \texttt{exception} - definované třídy pro chyby během překladu
+    \item \texttt{generator} - generátory \texttt{PL/0} instrukcí 
+    \item \texttt{ir} - adresář s třídama reprezentující veškeřé příkazy/výrazy
+    \item \texttt{listener} - listenery pro hlášení chyb při lexikální/syntaktické analýze
+    \item \texttt{table} - implementace tabulky symbolů
+    \item \texttt{visitor} - visitory pro průchod derivačním stromem
+    \item \texttt{App.java} - vstupní bod programu
+\end{itemize}
+
+\section{TODO - podrobnosti k implementaci + grafíky}
 
 \chapter{Testování}
 Projekt obsahuje sadu automatických testů, které testují lexikální, syntakickou či sémantickou analýzu.
 Všechny testy (celkem TODO scénářů) jsou automaticky spouštěné při vytváření výsledného
 \texttt{.jar} souboru pomocí skriptu \texttt{run.sh} (případně pro platformu Windows \texttt{run.bat}).
+Testování bylo prováděno na operačních systémech Windows a MacOS (a to zejména pro zajištění multiplatformnosti - např. ukončovací znaky
+na konci řádek).
 
 \section{Lexikální analýza}
 Testy pro lexikální analýzu spouští třída \texttt{ExpressionLexicalTest}. Obsahuje celkem TODO negativních testů, které validují správnou funkčnost
@@ -364,6 +407,11 @@ s \texttt{PL/0} instrukcemi.
 
 
 \chapter{Závěr}
+V rámci semestrální práce byl vytvořen překladač jazyka Ligma (\textit{\textbf{L}anguage S\textbf{igma}}) do instrukcí \texttt{PL/0}. 
+Během překládání zdrojových kódů 
+do instrukcí \texttt{PL/0} je průběh překladu podrobně logován do konzole. Pro testování vygenerovaných
+instrukcí ukázkových programů byl využit on-line interpret \url{https://home.zcu.cz/~lipka/fjp/pl0/}. Veškeré testovací scénáře jsou uloženy
+v složce \texttt{/src/main/resources}. Nevalidní konstrukce/zápisy jazyka Ligma jsou řádně testovány automatickýmu testy. 
 
 \appendix
 
