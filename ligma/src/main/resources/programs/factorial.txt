@@ -1,11 +1,10 @@
 int res = factorial(5);
+int resRecursive = factorialRecursive(5);
 
-func int factorial(int n)
-{
+func int factorial(int n) {
     int res = 1;
 
-    for (int i = 1 to n + 1)
-    {
+    for (int i = 1 to n + 1) {
         res = calcResult(res, i);
     }
 
@@ -15,4 +14,18 @@ func int factorial(int n)
 func int calcResult(int res, int i)
 {
     return res * i;
+}
+
+func int factorialRecursive(int n) {
+    int result = 0;
+
+    if (n == 0) {
+        result = 1;
+    } else {
+        // Recursive case
+        int recursiveResult = factorialRecursive(n - 1);
+        result = n * recursiveResult;
+    }
+
+    return result;
 }

@@ -7,8 +7,6 @@ import ligma.generator.ProgramGenerator;
 import ligma.ir.program.Program;
 import ligma.listener.EnhancedLigmaLexer;
 import ligma.listener.SyntaxErrorListener;
-import ligma.table.Scope;
-import ligma.table.SymbolTable;
 import ligma.visitor.ProgramVisitor;
 import lombok.extern.slf4j.Slf4j;
 import org.antlr.v4.runtime.CharStream;
@@ -20,7 +18,6 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 @Slf4j
 public class App {

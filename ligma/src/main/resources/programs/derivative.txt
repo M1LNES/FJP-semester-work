@@ -3,14 +3,11 @@ int y2 = 7;
 
 int res = foo(y1, y2);
 
-func int derivative_y(int y2, int y1)
-{
-    int h = 2;
-    return (y2 - y1) / h;
-}
-
-func int foo(int y1, int y2)
-{
+func int foo(int y1, int y2) {
     return derivative_y(y2, y1);
 }
 
+func int derivative_y(int y2, int y1) {
+    int h = 2;
+    return (y2 - y1) / h;
+}

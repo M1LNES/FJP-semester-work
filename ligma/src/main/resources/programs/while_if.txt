@@ -1,19 +1,16 @@
 int a = 3;
 int b = 4;
-int c = foo(6);
+const int c = foo(6);
 
-func int foo(int n)
-{
+func int foo(int n) {
     a = 5;
 
-    while (a < 6)
-    {
+    while (a < 6) {
         b = 6;
         a = a + 1;
     }
 
-    if (a == 6)
-    {
+    if (a == 6) {
         a = 10;
     }
 
