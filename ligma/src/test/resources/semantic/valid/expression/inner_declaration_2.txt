@@ -1,0 +1,8 @@
+boolean mogging = true;
+
+if (mogging) {
+boolean mogging = !mogging;
+if (!mogging) {
+mogging = mogging;
+}
+}

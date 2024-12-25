@@ -1,0 +1,6 @@
+
+int a = vrat();
+
+func int vrat() {
+return;
+}

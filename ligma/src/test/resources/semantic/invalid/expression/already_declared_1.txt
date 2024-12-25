@@ -1,0 +1,4 @@
+int aa = 10;
+int bb = 100;
+int cc = 5;
+int aa = 9;

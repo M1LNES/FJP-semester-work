@@ -1,0 +1,5 @@
+int a = halo();
+
+func int halo() {
+return 1;
+}

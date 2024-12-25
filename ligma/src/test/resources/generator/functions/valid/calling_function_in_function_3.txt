@@ -1,0 +1,18 @@
+int a = cislo();
+
+func int cislo(){
+int neco_na_test = davej();
+return pet() + sest();
+}
+
+func int pet() {
+return 5;
+}
+
+func int sest() {
+return 6;
+}
+
+func int davej() {
+return 50 - 9;
+}

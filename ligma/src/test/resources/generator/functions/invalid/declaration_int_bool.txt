@@ -1,0 +1,5 @@
+boolean isFrantaPalackyMewing = halo();
+
+func int halo() {
+return 15;
+}

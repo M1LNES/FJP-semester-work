@@ -1,0 +1,1 @@
+long fakt_long = 1000000;

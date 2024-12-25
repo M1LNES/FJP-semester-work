@@ -1,0 +1,8 @@
+int a = foo(true);
+
+func int foo(boolean b) {
+if (b) {
+return 1;
+}
+return 28;
+}

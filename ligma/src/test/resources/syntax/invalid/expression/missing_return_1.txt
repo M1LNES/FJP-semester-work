@@ -1,0 +1,8 @@
+
+int a = vrat();
+
+func int vrat() {
+int a = 60 - 9;
+int b = 55 - 6;
+int c = b - a;
+}
