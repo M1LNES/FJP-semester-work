@@ -2,6 +2,7 @@ package ligma.generator;
 
 import ligma.enums.DataType;
 import ligma.enums.Instruction;
+import ligma.exception.GenerateException;
 import ligma.ir.expression.Expression;
 import ligma.ir.statement.Assignment;
 import ligma.ir.statement.ConstantDefinition;
@@ -69,6 +70,9 @@ public class StatementGenerator extends Generator {
         expressionGenerator.setExpression(expression);
         expressionGenerator.generate();
 
+        // Check data types (needed because of function return types)
+        validateAssignmentType(descriptor, expression);
+
         // Save the result of the expression to the allocated space
         addInstruction(Instruction.STO, SymbolTable.getLevel(identifier), descriptor.getAddres());
     }
@@ -93,6 +97,9 @@ public class StatementGenerator extends Generator {
         expressionGenerator.setExpression(expression);
         expressionGenerator.generate();
 
+        // Check data types (needed because of function return types)
+        validateAssignmentType(descriptor, expression);
+
         // Save the result of the expression to the allocated space
         addInstruction(Instruction.STO, 0, descriptor.getAddres());
     }
@@ -110,6 +117,9 @@ public class StatementGenerator extends Generator {
         for (int i = 0; i < allIdentifiers.size(); i++) {
             String identifier = allIdentifiers.get(i);
             Descriptor descriptor = SymbolTable.lookup(identifier);
+
+            // Check data types (needed because of function return types)
+            validateAssignmentType(descriptor, expression);
 
             // Store the value of the expression to the given identifier
             addInstruction(Instruction.STO, SymbolTable.getLevel(identifier), descriptor.getAddres());
@@ -319,5 +329,15 @@ public class StatementGenerator extends Generator {
     private void generateFunctionCall(FunctionCall functionCall) {
         functionGenerator.setFunctionCall(functionCall);
         functionGenerator.generate();
+    }
+
+    private void validateAssignmentType(Descriptor descriptor, Expression expression) {
+        // Validate that the data types are compatible (needed because of functions)
+        if (descriptor.getType() != expression.getType()) {
+            throw new GenerateException(
+                "Cannot assign a value of type " + expression.getType() +
+                " to variable '" + descriptor.getName() +
+                "' because it is of type " + descriptor.getType());
+        }
     }
 }
