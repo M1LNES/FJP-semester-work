@@ -1,20 +1,17 @@
 int b = foo(1);
 int c = ahoj(5);
 
-func int foo(int x)
-{
+func int foo(int x) {
     x = 20 + les(30);
     return x;
 }
 
-func int les(int y)
-{
+func int les(int y) {
     y = y + 10;
     return y + ahoj(1);
 }
 
-func int ahoj(int l)
-{
+func int ahoj(int l) {
     l = l + 1;
     return l;
 }

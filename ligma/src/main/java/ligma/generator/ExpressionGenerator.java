@@ -34,13 +34,13 @@ public class ExpressionGenerator extends Generator {
         switch (expression) {
             case PowerExpression powerExpression -> generatePowerExpression(powerExpression);
             case UnaryMinusExpression unaryMinusExpression -> genUnaryMinusExpression(unaryMinusExpression);
-            case UnaryPlusExpression unaryPlusExpression -> {} // Nothing needed
+            case UnaryPlusExpression unaryPlusExpression -> genUnaryPlusExpression(unaryPlusExpression);
             case NotExpression notExpression -> genNotExpression(notExpression);
             case MultiplicativeExpression multiplicativeExpression -> genMultiplicativeExpression(multiplicativeExpression);
             case AdditiveExpression additiveExpression -> genAdditiveExpression(additiveExpression);
             case ComparisonExpression comparisonExpression -> genComparisonExpression(comparisonExpression);
             case LogicalExpression logicalExpression -> genLogicalExpression(logicalExpression);
-            case ParenthesizedExpression parenthesizedExpression -> {} // Nothing needed
+            case ParenthesizedExpression parenthesizedExpression -> genParenthesizedExpression(parenthesizedExpression);
             case Identifier identifier -> genIdentifierExpression(identifier);
             case Literal<?> literal -> generateLiteral(literal);
             case FunctionCallExpression functionCallExpression -> generateFunctionCallExpression(functionCallExpression);
@@ -182,6 +182,17 @@ public class ExpressionGenerator extends Generator {
                 // Subtract the 0 and expression
                 addInstruction(Instruction.OPR, 0, 3);
             }
+            default -> {}
+        }
+    }
+
+    private void genUnaryPlusExpression(UnaryPlusExpression unaryPlusExpression) {
+        log.debug("Generating unary plus expression");
+        Expression expressionUnary = unaryPlusExpression.getExpression();
+        Operator operator = unaryPlusExpression.getOperator();
+
+        switch (operator) {
+            case ADD -> generateExpression(expressionUnary);
             default -> {}
         }
     }
@@ -378,6 +389,13 @@ public class ExpressionGenerator extends Generator {
             }
             default -> {}
         }
+    }
+
+    private void genParenthesizedExpression(ParenthesizedExpression parenthesizedExpression) {
+        log.debug("Generating parenthesized expression");
+        Expression parenthesizedExpr = parenthesizedExpression.getExpression();
+
+        generateExpression(parenthesizedExpr);
     }
 
     private void genIdentifierExpression(Identifier identifier) {
