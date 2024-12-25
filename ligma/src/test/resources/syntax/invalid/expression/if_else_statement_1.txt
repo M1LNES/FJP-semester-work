@@ -1,0 +1,6 @@
+int sigma = 69;
+
+if (sigma != 0)
+   sigma = 0;
+else
+   sigma = 15;

@@ -1,0 +1,5 @@
+funkce(15,9, true);
+
+func int funkce(int a, int b, boolean c) {
+return a * b - b;
+}

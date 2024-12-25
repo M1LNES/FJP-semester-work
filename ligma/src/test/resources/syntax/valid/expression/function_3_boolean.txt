@@ -1,0 +1,5 @@
+boolean gyat = isSkibidiOhio(true, false, 6);
+
+func boolean isSkibidiOhio(boolean sigma, boolean skibidi, int cislo) {
+return sigma || skibidi;
+}

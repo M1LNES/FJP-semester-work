@@ -1,0 +1,9 @@
+boolean gyat = isSkibidiOhio(true) || hasNoRizz(false);
+
+func boolean isSkibidiOhio(boolean sigma) {
+return sigma;
+}
+
+func boolean hasNoRizz(boolean rizzed) {
+return rizzed;
+}

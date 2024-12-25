@@ -1,0 +1,6 @@
+int a = 10;
+int b = 25;
+int c = 6;
+int d = 2;
+
+{a, b, c, d} = -99999;

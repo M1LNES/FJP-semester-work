@@ -1,0 +1,6 @@
+int a = 1;
+
+repeat
+{
+a = a + 6;
+} until (a > 80);

@@ -1,0 +1,9 @@
+int sigma = 69;
+
+if (false) {
+   sigma = 0;
+} els {
+   sigma = 15;
+   sigma = 16;
+   sigma = 17;
+}

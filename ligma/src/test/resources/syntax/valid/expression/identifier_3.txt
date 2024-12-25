@@ -1,0 +1,1 @@
+int cisla6dalsiCisla123 = 10;

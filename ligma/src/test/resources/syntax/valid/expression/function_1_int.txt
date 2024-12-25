@@ -1,0 +1,6 @@
+int a = funkce();
+
+func int funkce() {
+int a = 6 + 8;
+return a + 9;
+}

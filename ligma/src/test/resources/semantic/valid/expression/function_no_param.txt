@@ -1,0 +1,6 @@
+boolean isFromOhio = isMilanFromOhio();
+
+
+func boolean isMilanFromOhio() {
+return true;
+}

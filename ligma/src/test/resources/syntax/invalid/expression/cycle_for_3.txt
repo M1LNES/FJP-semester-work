@@ -1,0 +1,4 @@
+int a = 0;
+for (true) {
+a = a + 2;
+}

@@ -1,0 +1,5 @@
+boolean gyat = isJakubMewing();
+
+func boolean isJakubMewing() {
+return;
+}

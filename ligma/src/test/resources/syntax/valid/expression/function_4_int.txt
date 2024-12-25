@@ -1,0 +1,9 @@
+int a = f1(10) + f2(f1(25));
+
+func int f1(int a) {
+return a - 9;
+}
+
+func int f2 (int b) {
+return b * 10;
+}

@@ -1,0 +1,5 @@
+boolean a = true;
+
+do {
+a = a;
+} while (!a);
