@@ -60,7 +60,7 @@ The goal of this project was to develop a compiler for the **Ligma programming l
 ### Example Usage
 
 ```bash
-java -jar ligma.jar example.lgm output.pl0
+java -jar ligma.jar ligma-example.txt output-pl0.txt
 ```
 
 ## Project Structure
