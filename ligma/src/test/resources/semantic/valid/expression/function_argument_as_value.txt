@@ -1,0 +1,5 @@
+int result = getResult(10,15);
+
+func int getResult(int a, int b) {
+return a * b;
+}

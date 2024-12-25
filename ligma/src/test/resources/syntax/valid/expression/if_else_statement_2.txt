@@ -1,0 +1,7 @@
+boolean b = true;
+
+if (b) {
+
+} else {
+b = true;
+}

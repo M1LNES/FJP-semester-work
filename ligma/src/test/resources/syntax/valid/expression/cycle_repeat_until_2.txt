@@ -1,0 +1,5 @@
+boolean skonci = false;
+
+repeat {
+skonci = true;
+} until (!skonci);

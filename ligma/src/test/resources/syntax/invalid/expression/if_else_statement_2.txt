@@ -1,0 +1,7 @@
+int sigma = 69;
+
+if (sigma < 0) {
+   sigma = 0;
+} else if (sigma = 10) {
+   sigma = 15;
+}

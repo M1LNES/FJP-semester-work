@@ -1,0 +1,5 @@
+boolean a = true;
+boolean b = false;
+boolean c = true;
+
+true = a = b = b;

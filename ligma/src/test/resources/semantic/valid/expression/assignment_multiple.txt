@@ -1,0 +1,9 @@
+int a = 10;
+int b = 8;
+int c = 15;
+int d = 155;
+int e = 100;
+int f = -9;
+
+a = b = c = 9;
+d = e = f = -9999;
