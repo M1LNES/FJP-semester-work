@@ -4,37 +4,7 @@
 \usepackage{caption}
 \usepackage{sourcecodepro}
 \usepackage{amsmath}
-
-\lstdefinelanguage{Ligma}{
-  keywords={int, const, catch, continue, debugger, default, delete, do, else, false, finally, for, func, if, in, instanceof, new, null, return, switch, this, throw, true, try, typeof, var, void, while, with, repeat, until, boolean},
-  morecomment=[l]{//},
-  morecomment=[s]{/*}{*/},
-  morestring=[b]',
-  morestring=[b]",
-  ndkeywords={class, export, boolean, throw, implements, import, this},
-  keywordstyle=\color{blue}\bfseries,
-  ndkeywordstyle=\color{darkgray}\bfseries,
-  identifierstyle=\color{black},
-  commentstyle=\color{purple}\ttfamily,
-  stringstyle=\color{red}\ttfamily,
-  sensitive=true
-}
-
-\lstset{
-   language=Ligma,
-   backgroundcolor=\color{lightgray},
-   extendedchars=true,
-   basicstyle=\footnotesize\ttfamily,
-   showstringspaces=false,
-   showspaces=false,
-   numbers=left,
-   numberstyle=\footnotesize,
-   numbersep=9pt,
-   tabsize=2,
-   breaklines=true,
-   showtabs=false,
-   captionpos=b
-}
+\usepackage{dirtree}
 
 \definecolor{codebg}{RGB}{240, 240, 240}
 
@@ -51,373 +21,425 @@
 
 \worktypespec{Semestrální práce}
 \title{Překladač jazyka Ligma}
-\author{Milan Janoch}{a Jakub Pavlíček}{Bc.}{}
+\author{Milan Janoch – janochmi@students.zcu.cz}{\\Jakub Pavlíček – jpvlck@students.zcu.cz}{Bc.}{}
 \addbibresource{literatura.bib}
 
 \begin{document}
 \frontpages[tm]
 \tableofcontents
 
+    \chapter{Zadání}
 
-\chapter{Zadání}
-Cílem práce bude vytvoření překladače zvoleného jazyka. Je možné inspirovat se jazykem PL/0, vybrat si podmnožinu nějakého existujícího jazyka nebo si navrhnout jazyk zcela vlastní. Dále je také potřeba zvolit si pro jakou architekturu bude jazyk překládán (doporučeny jsou instrukce PL/0, ale je možné zvolit jakoukoliv instrukční sadu pro kterou budete mít interpret).
-\\\\Jazyk musí mít minimálně následující konstrukce:
-\begin{itemize}
-    \item definice celočíselných proměnných
-    \item definice celočíselných konstant
-    \item přiřazení
-    \item základní aritmetiku a logiku (+, -, *, /, AND, OR, negace a závorky, operátory pro porovnání čísel)
-    \item cyklus (libovolný)
-    \item jednoduchou podmínku (if bez else)
-    \item definice podprogramu (procedura, funkce, metoda) a jeho volání
-\end{itemize}
-Překladač který bude umět tyto základní věci bude hodnocen deseti body. Další body (alespoň do minimálních 20) je možné získat na základě rozšíření, jsou rozděleny do dvou skupin, jednodušší za jeden bod a složitější za dva až tři body. Další rozšíření je možno doplnit po konzultaci, s ohodnocením podle odhadnuté náročnosti.
-\\\\Jednoduchá rozšíření (1 bod):
-\begin{itemize}
-    \item každý další typ cyklu (for, do .. while, while .. do, repeat .. until, foreach pro pole)
-    \item else větev
-    \item datový typ boolean a logické operace s ním
-    \item datový typ real (s celočíselnými instrukcemi)
-    \item datový typ string (s operátory pro spojování řětezců)
-    \item rozvětvená podmínka (switch, case)
-    \item násobné přiřazení (a = b = c = d = 3;)
-    \item podmíněné přiřazení / ternární operátor (min = (a < b) ? a : b;)
-    \item paralelní přiřazení (\{a, b, c, d\} = \{1, 2, 3, 4\};)
-    \item příkazy pro vstup a výstup (read, write - potřebuje vhodné instrukce které bude možné využít)
-\end{itemize}
-Složitěší rozšíření (2 body):
-\begin{itemize}
-    \item příkaz GOTO (pozor na vzdálené skoky)
-    \item datový typ ratio (s celočíselnými instrukcemi)
-    \item složený datový typ (Record)
-    \item pole a práce s jeho prvky
-    \item operátor pro porovnání řetězců
-    \item parametry předávané hodnotou
-    \item návratová hodnota podprogramu
-    \item objekty bez polymorfismu
-    \item anonymní vnitřní funkce (lambda výrazy)
-\end{itemize}
-Rozšíření vyžadující složitější instrukční sadu než má PL/0 (3 body):
-\begin{itemize}
-    \item dynamicky přiřazovaná paměť - práce s ukazateli
-    \item parametry předávané odkazem
-    \item objektové konstrukce s polymorfním chováním
-    \item instanceof operátor
-    \item anonymní vnitřní funkce (lambda výrazy) které lze předat jako parametr
-    \item mechanismus zpracování výjimek
-\end{itemize}
-Vlastní interpret (řádkový, bez rozhraní, složitý alespoň jako rozšířená PL/0) je za 6 bodů. 
-\\\\Kromě toho že by program měl fungovat se zohledňují i další věci, které mohou pozitivně nebo negativně ovlivnit bodování:
-\begin{itemize}
-    \item testování - tvorba rozumné automatické testovací sady +3 body (pro inspiraci hledejte test suit pro LLVM nebo se podívejte na Plum Hall testy, ale jde skutečně jen o inspiraci, stačí výrazně jednodušší řešení).
-    \item Kvalita dokumentace -x bodů až +2 body podle kvality a prohřešků (vynechaná gramatika, nesrozumitelné věty, příliš chyb a překlepů, bitmapové obrázky pro diagramy s kompresními artefakty, ...).
-    \item Vedení projektu v GITu -x bodů až +2 body podle důslednosti a struktury příspěvků.
-    \item Kvalita zdrojového textu -x bodů až +2 body podle obecně znýmách pravidel ze ZSWI, PPA a podobně (magická čísla, struktura programu a dekompozice problému, božské třídy a metody, ...)
-\end{itemize}
+    Cílem práce bude vytvoření překladače zvoleného jazyka. Je možné inspirovat se jazykem PL/0, vybrat si podmnožinu nějakého existujícího jazyka nebo si navrhnout jazyk zcela vlastní. Dále je také potřeba zvolit si pro jakou architekturu bude jazyk překládán (doporučeny jsou instrukce PL/0, ale je možné zvolit jakoukoliv instrukční sadu pro kterou budete mít interpret).
+    \\\\
+    Jazyk musí mít minimálně následující konstrukce:
+    \begin{itemize}
+        \item definice celočíselných proměnných
+        \item definice celočíselných konstant
+        \item přiřazení
+        \item základní aritmetiku a logiku (+, -, *, /, \&\&, ||, !, (), ==, !=, <, >, <=, >=)
+        \item cyklus (libovolný)
+        \item jednoduchou podmínku (if bez else)
+        \item definice podprogramu (procedura, funkce, metoda) a jeho volání
+    \end{itemize}
+    Překladač který bude umět tyto základní věci bude hodnocen deseti body. Další body (alespoň do minimálních 20) je možné získat na základě rozšíření, jsou rozděleny do dvou skupin, jednodušší za jeden bod a složitější za dva až tři body. Další rozšíření je možno doplnit po konzultaci, s ohodnocením podle odhadnuté náročnosti.
+    \\\\
+    Jednoduchá rozšíření (1 bod):
+    \begin{itemize}
+        \item každý další typ cyklu (for, do .. while, while .. do, repeat .. until, foreach)
+        \item else větev
+        \item datový typ boolean a logické operace s ním
+        \item datový typ real (s celočíselnými instrukcemi)
+        \item datový typ string (s operátory pro spojování řetězců)
+        \item rozvětvená podmínka (switch, case)
+        \item násobné přiřazení: a = b = c = d = 3;
+        \item ternární operátor: min = (a < b) ? a : b;
+        \item paralelní přiřazení \{a, b, c, d\} = \{1, 2, 3, 4\};
+        \item příkazy pro vstup a výstup (read a write)
+    \end{itemize}
+    Složitěší rozšíření (2 body):
+    \begin{itemize}
+        \item příkaz GOTO (pozor na vzdálené skoky)
+        \item datový typ ratio (s celočíselnými instrukcemi)
+        \item složený datový typ (Record)
+        \item pole a práce s jeho prvky
+        \item operátor pro porovnání řetězců
+        \item parametry předávané hodnotou
+        \item návratová hodnota podprogramu
+        \item objekty bez polymorfismu
+        \item anonymní vnitřní funkce (lambda výrazy)
+    \end{itemize}
+    Rozšíření vyžadující složitější instrukční sadu než má PL/0 (3 body):
+    \begin{itemize}
+        \item dynamicky přiřazovaná paměť - práce s ukazateli
+        \item parametry předávané odkazem
+        \item objektové konstrukce s polymorfním chováním
+        \item instanceof operátor
+        \item anonymní vnitřní funkce (lambda výrazy) které lze předat jako parametr
+        \item mechanismus zpracování výjimek
+    \end{itemize}
+    Vlastní interpret (řádkový, složitý alespoň jako rozšířená PL/0) je za 6 bodů. 
+    \\\\
+    Zohledňují se i další věci, které mohou pozitivně nebo negativně ovlivnit bodování:
+    \begin{itemize}
+        \item testování: tvorba rozumné automatické testovací sady +3 body
+        \item kvalita dokumentace: -x bodů až +2 body podle kvality a prohřešků
+        \item využití GITu: -x bodů až +2 body podle důslednosti a struktury příspěvků
+        \item kvalita zdrojového textu: -x bodů až +2 body podle obecně známých pravidel
+    \end{itemize}
 
-\chapter{Návrh jazyka}
+    \chapter{Návrh jazyka}
 
-\section{Zvolená rozšíření jazyka Ligma}
-\begin{itemize}
-    \item cyklus do-while 
-    \item cyklus for
-    \item cyklus repeat-until
-    \item datový typ boolean a logické operace s ním
-    \item else větev
-    \item násobné přiřazení (a = b = c = d = 3;)
-    \item parametry předávané hodnotou
-    \item návratová hodnota podprogramu
-\end{itemize}
+    \section{Zvolená rozšíření jazyka Ligma}
+    \begin{itemize}
+        \item cyklus for
+        \item cyklus do-while
+        \item cyklus repeat-until
+        \item datový typ boolean a logické operace s ním
+        \item else větev
+        \item násobné přiřazení: a = b = c = d = 3;
+        \item parametry předávané hodnotou
+        \item návratová hodnota podprogramu
+    \end{itemize}
 
-\section{Omezení jazyka}
-\begin{itemize}
-    \item Při deklaraci proměnné je třeba vždy nastavit hodnotu
-    \item V hlavičce for cyklu se musí deklarovat proměnná
-    \item Podporované datové typy proměnných: int, boolean
-    \item Podporovaná aritmetika pro boolean - \&\&, ||, !, (), ==, !=
-    \item Funkce musí být definovány až pod samotnými příkazy v nejvrchnějším scopu
-    \item Identifikátor nesmí obsahovat speciální znaky (kromě \_ ) a začínat číslem
-\end{itemize}
+    \section{Omezení jazyka}
+    \begin{itemize}
+        \item Při deklaraci proměnné je třeba vždy nastavit hodnotu
+        \item V hlavičce for cyklu se musí deklarovat proměnná
+        \item Podporované datové typy: int, boolean
+        \item Identifikátor nesmí obsahovat speciální znaky (kromě '\_') a začínat číslem
+        \item Funkce musí být definovány až pod samotnými příkazy
+        \item Funkce lze definovat pouze v globálním rozsahu
+        \item Funkce musí vždy vracet hodnotu (return je vždy poslední příkaz funkce)
+    \end{itemize}
 
-\section{Konstrukce jazyka}
+    \section{Konstrukce jazyka}
 
-\subsection{Povinné}
+    \subsection{Povinné}
 
-\subsubsection{Definice celočíselných proměnných}
-\begin{lstlisting}[]
+    \subsubsection*{Definice celočíselných proměnných}
+    \begin{minted}[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg]{cpp}
 int a = 5;
-\end{lstlisting}
+    \end{minted}
 
+    \subsubsection*{Definice celočíselných konstant}
+    \begin{minted}[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg]{cpp}
+const int a = 5;
+    \end{minted}
 
-\subsubsection{Definice celočíselných konstant}
-\begin{lstlisting}[]
-const int b = -8;
-\end{lstlisting}
+    \subsubsection*{Přiřazení}
+    \begin{minted}[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg]{cpp}
+int a = 1;
+a = 5;
+    \end{minted}
 
-\subsubsection{Přiřazení}
-\begin{lstlisting}[]
-int a = 10;
-int b = a;
-\end{lstlisting}
+    \subsubsection*{Základní aritmetika a logika}
+    Aritmetika:
+    \begin{minted}[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg]{cpp}
+int a = 5 + 1;
+int b = 5 - 1;
+int c = 5 / 1;
+int d = 5 * 1;
+int e = -1;
+int f = +1;
+int g = 5 % 5;
+    \end{minted}
+    Logika:
+    \begin{minted}[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg]{java}
+boolean a = 1 < 5;
+boolean b = 1 <= 5;
+boolean c = 1 >= 5;
+boolean d = 1 > 5;
+boolean e = 1 == 5;
+boolean f = 1 != 5;
+boolean g = true && true;
+boolean h = true || false;
+    \end{minted}
 
-\subsubsection{Základní aritmetika a logika}
-Aritmetika:
-\begin{lstlisting}[]
-int a = 3;
-int b = 50;
-
-int c = a + b;
-int d = b - a;
-int e = b / a;
-int f = a * b;
-int g = ---a; 
-int h = +a;   
-int i = (a + b - 10) % 5; 
-\end{lstlisting}
-Operátory pro porovnání:
-\begin{lstlisting}[]
-boolean a = 1 < 50;
-boolean b = 2 <= -5;
-boolean c = 5 >= 6;
-boolean d = 15 > 20;
-boolean e = 5 == 5;
-boolean f = 10 != 22;
-\end{lstlisting}
-
-\subsubsection{Cyklus - while}
-\begin{lstlisting}[]
+    \subsubsection*{While cyklus}
+    \begin{minted}[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg]{cpp}
 int a = 0;
-while (a < 10) {
-    a = a + 2;
-}
-\end{lstlisting}
 
-\subsubsection{Podmínka if (bez else)}
-\begin{lstlisting}[]
-int a = 18;
+while (a < 5) {
+    a = a + 1;
+}
+    \end{minted}
+
+    \subsubsection*{Podmínka if (bez else)}
+    \begin{minted}[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg]{cpp}
+int a = 1;
+
 if (a != 0) {
-    a = a + 9;
+    a = 5;
 }
-\end{lstlisting}
+    \end{minted}
 
-\subsubsection{Definice funkce a její volání}
-\begin{lstlisting}[]
+    \subsubsection*{Definice funkce a její volání}
+    \begin{minted}[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg, extrakeywords={func}]{java}
 int res = foo();
 
 func int foo() {
-    return 10;
+    return 5;
 }
-\end{lstlisting}
+    \end{minted}
 
+    \subsection{Rozšiřující}
 
+    \subsubsection*{Cyklus do-while}
+    \begin{minted}[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg]{cpp}
+int a = 1;
 
-\subsection{Rozšiřující}
-
-\subsubsection{Cyklus do-while}
-\begin{lstlisting}[]
-int a = 10;
 do {
-    a = a + 8;
-} while (a < 50);
-\end{lstlisting}
+    a = a + 1;
+} while (a < 5);
+    \end{minted}
 
+    \subsubsection*{Cyklus repeat-until}
+    \begin{minted}[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg, extrakeywords={repeat, until}]{cpp}
+int a = 1;
 
-\subsubsection{Cyklus repeat-until}
-\begin{lstlisting}[]
-int a = 5;
 repeat {
     a = a + 1;
-} until (a >= 10);
-\end{lstlisting}
+} until (a >= 5);
+    \end{minted}
 
-\subsubsection{Cyklus for}
-\begin{lstlisting}[]
+    \subsubsection*{Cyklus for}
+    \begin{minted}[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg]{cpp}
 for (int a = 0 to 10) {
     ...
 }
-\end{lstlisting}
+    \end{minted}
 
-\subsubsection{Else větev}
-\begin{lstlisting}[]
+    \subsubsection*{Else větev}
+    \begin{minted}[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg]{java}
 if (false) {
     ...
 } else {
     ...
 }
-\end{lstlisting}
+    \end{minted}
 
-\subsubsection{Datový typ boolean a logické operace s ním}
-Aritmetika:
-\begin{lstlisting}[]
+    \subsubsection*{Datový typ boolean a logické operace s ním}
+    \begin{minted}[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg]{java}
 boolean a = true;
 boolean b = false;
 
 boolean c = a && b;
 boolean d = a || b;
 boolean e = !a;
-boolean f = ((a || b) && b);
-\end{lstlisting}
-Operátory pro porovnání:
-\begin{lstlisting}[]
-boolean a = true == false;
-boolean b = true != false;
-\end{lstlisting}
+boolean f = true == false;
+boolean g = true != false;
+    \end{minted}
 
-\subsubsection{Násobné přiřazení}
-\begin{lstlisting}[]
-int a = 5;
-int b = 6;
-int c = 10;
-int d = -10;
+    \subsubsection*{Násobné přiřazení}
+    \begin{minted}[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg]{java}
+int a = 1;
+int b = 2;
+int c = 3;
 
-b = a = d = c = -80;
-\end{lstlisting}
+a = b = c = 5;
+    \end{minted}
 
-\subsubsection{Parametry předávané hodnotou}
-\begin{lstlisting}[]  
-int res = foo(3,4);
+    \subsubsection*{Parametry předávané hodnotou}
+    \begin{minted}[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg, extrakeywords={func}]{java}
+int res = foo(3, 4);
     
 func int foo(int a, int b) {
     return a * b;
 }
-\end{lstlisting}
+    \end{minted}
 
-\subsubsection{Návratová hodnota podprogramu}
-\begin{lstlisting}[]
-int num = 8;    
-int res = foo(num);
+    \subsubsection*{Návratová hodnota podprogramu}
+    \begin{minted}[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg, extrakeywords={func}]{java} 
+int res = foo(1);
 
 func int foo(int a) {
     return a - 1;
 }
-\end{lstlisting}
+    \end{minted}
 
-\subsection{Vlastní}
+    \subsection{Vlastní}
 
-\subsubsection{Mocnina}
-Exponent mocniny musí být nezáporné celé číslo - interval <0;n>.
-\begin{lstlisting}[]
-int a = 8 ^ 3;    
-\end{lstlisting}
+    \subsubsection*{Mocnina}
+    \begin{minted}[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg]{java}
+int a = 2 ^ 5;
+    \end{minted}
 
-\subsubsection{Komentáře}
-\begin{lstlisting}[]
-// Tohle je jednoradkovy komentar
+    \subsubsection*{Komentáře}
+    \begin{minted}[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg]{java}
+// Line comment
 
 /*
-Tohle je vnoreny komentar
+    Multiline comment
 */
-\end{lstlisting}
+    \end{minted}
 
-\chapter{Implementace}
-K vytvoření překladače jazyka Ligma je použit nástroj ANTLR. Zdrojové soubory se nachází v adresáři
-\texttt{/ligma/src/main/java/ligma}, soubor s předpisem gramatiky v \texttt{/ligma}. Syntaxe jazyka
-připomíná kombinaci JavaScriptu a ANSI C.
+    \chapter{Implementace}
 
-\section{Gramatika}
-Gramatika jazyka definovaná v souboru \texttt{Ligma.g4} popisuje lexikální a syntaktická pravidla pro překladač. 
-Obsahuje pravidla pro klíčová slova, datové typy, literály, operátory a struktury, jako jsou cykly, 
-podmínky, funkce a přiřazení hodnot. Lexikální část gramatiky (\texttt{lexer rules}) rozpoznává jednotlivé tokeny, 
-zatímco syntaktická část (\texttt{parser rules}) určuje hierarchii a strukturu příkazů. 
-Gramatika je navržena tak, aby umožnila parsování komplexních výrazů včetně operátorů s různou prioritou. 
-Tento soubor tvoří základ pro generování parsovacího stromu, který je dále využíván v překladači.
+    K vytvoření překladače jazyka Ligma jsme použili nástroj ANTLR a programovací jazyk Java.
+    Zdrojové soubory se nachází v adresáři \texttt{/ligma/src/}.
 
-\section{Struktura projektu}
-\begin{itemize}
-    \item \texttt{enums} - výčtové typy (\texttt{PL/0} instrukce, operátory, scopy, datové typy)
-    \item \texttt{exception} - definované třídy pro chyby během překladu
-    \item \texttt{generator} - generátory \texttt{PL/0} instrukcí 
-    \item \texttt{ir} - adresář s třídama reprezentující veškeřé příkazy/výrazy
-    \item \texttt{listener} - listenery pro hlášení chyb při lexikální/syntaktické analýze
-    \item \texttt{table} - implementace tabulky symbolů
-    \item \texttt{visitor} - visitory pro průchod derivačním stromem
-    \item \texttt{App.java} - vstupní bod programu
-\end{itemize}
+    \section{Struktura projektu}
 
-\section{TODO - podrobnosti k implementaci + grafíky}
+    \dirtree{%
+        .1 src.
+        .2 main.
+        .3 java.
+        .4 ligma.
+        .5 enums\DTcomment{výčtové typy (PL/0 instrukce, datové typy, ...)}.
+        .5 exception\DTcomment{vlastní definované výjimky}.
+        .5 generated\DTcomment{soubory vygenerované ANTLR za překladu}.
+        .5 generator\DTcomment{generátory PL/0 instrukcí}.
+        .5 ir\DTcomment{vnitřní reprezentace jazyka}.
+        .5 listener\DTcomment{listenery pro lexikální/syntaktickou analýzu}.
+        .5 table\DTcomment{tabulka symbolů}.
+        .5 visitor\DTcomment{třídy pro průchod derivačního stromu}.
+        .5 App.java\DTcomment{vstupní bod programu}.
+        .3 resources.
+        .4 output.\DTcomment{výstupy programů (PL/0 instrukce)}.
+        .4 programs.\DTcomment{ukázkové programy}.
+        .2 test.
+        .3 java.\DTcomment{testy}.
+        .3 resources.\DTcomment{testovací soubory}.
+    }
 
-\chapter{Testování}
-Projekt obsahuje sadu automatických testů, které testují lexikální, syntakickou či sémantickou analýzu.
-Všechny testy (celkem TODO scénářů) jsou automaticky spouštěné při vytváření výsledného
-\texttt{.jar} souboru pomocí skriptu \texttt{run.sh} (případně pro platformu Windows \texttt{run.bat}).
-Testování bylo prováděno na operačních systémech Windows a MacOS (a to zejména pro zajištění multiplatformnosti - např. ukončovací znaky
-na konci řádek).
+    \pagebreak
 
-\section{Lexikální analýza}
-Testy pro lexikální analýzu spouští třída \texttt{ExpressionLexicalTest}. Obsahuje celkem TODO negativních testů, které validují správnou funkčnost
-lexikální analýzy. Testovací soubory se nachází v adresáři \texttt{/src/test/resources/lexical}.
-\section{Syntaktická analýza}
-Testy pro syntaktickou analýzu spouští třída \texttt{ExpressionSyntaxTest}. Obsahuje celkem TODO testů (pozitivních + negativních). Testovací
-soubory se nachází v adresáři \texttt{/src/test/resources/syntax}. Důraz u negativních testů byl kladen zejména na provádění neplatných operací 
-(např. chybějící operandy/operátory) či používání neplatných instrukcí. 
-\section{Sémantická analýza}
-Testy pro sémantickou analýzu spouští třída \texttt{ExpressionSemanticTest}. Obsahuje celkem TODO testů (pozitivních + negativních).
-Testovací soubory se nachází v adresáři \texttt{/src/test/resources/semantic}.
-\section{Generování PL/0 instrukcí}
-Ukázkové zdrojové kódy přeložené do instrukční sady \texttt{PL/0} se nachází v adresáři \texttt{/src/main/resources} - složka \texttt{/programs}
-pro zdrojové kódy Ligmy, složka \texttt{/output} pro vygenerované \texttt{PL/0} instrukce.
+    \section{Gramatika}
 
-\chapter{Uživatelská dokumentace}
-\subsection{Prerekvizity}
-Pro úspěšné přeložení je vyžadováno:
-\begin{itemize}
-    \item Java verze 23 (kvůli podpoře markdown komentářů)
-    \item Maven verze 3.9.9
-\end{itemize}
-
-\subsection{Překlad a spouštění}
-Pro překlad přejděte do adresáře \texttt{ligma} a spusťte skript \texttt{run.sh} (případně \texttt{run.bat}).
-
-\setwinprompt{C:/Users/pavlicekj/ligma}
-\begin{console}{Překlad a vytvoření spustitelného souboru}
-`\winprompt` run.bat
-
-[INFO] Scanning for projects...
-[INFO]
-[INFO] ----------------< ligma:ligma >-------
-[INFO] Building ligma 1.0
-[INFO]   from pom.xml
-[INFO] ----------------[ jar ]---------------
-
-......
-......
-
-[INFO] --------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] --------------------------------------
-[INFO] Total time:  12.525 s
-[INFO] Finished at: 2024-12-24T21:13:47+01:00
-[INFO] --------------------------------------
-\end{console}
-
-Skripty spustí příkaz \texttt{mvn clean install}, který stáhne veškeré potřebné knihovny, přeloží projekt (vytvoří adresář \texttt{target}
-s přeloženými soubory), následně spustí testy a vytvoří finální soubor \texttt{ligma.jar} ve složce \texttt{target}. 
-Následně se spustí ukázkový program a vygeneruje soubor s \texttt{PL/0} instrukcemi.
-
-Program následně můžete spouštět pomocí příkazu 
-
-\setwinprompt{C:/Users/pavlicekj/ligma/target}
-\begin{console}{Spuštění programu}
-`\winprompt` java -jar ligma.jar <input-file> <output-file>
-\end{console}
-, kde \texttt{<input-file>} je cesta k souboru se zdrojovým kódem jazyka Ligma a \texttt{<output-file>} je výsledný soubor
-s \texttt{PL/0} instrukcemi.
-
-
-
-
-\chapter{Závěr}
-V rámci semestrální práce byl vytvořen překladač jazyka Ligma (\textit{\textbf{L}anguage S\textbf{igma}}) do instrukcí \texttt{PL/0}. 
-Během překládání zdrojových kódů 
-do instrukcí \texttt{PL/0} je průběh překladu podrobně logován do konzole. Pro testování vygenerovaných
-instrukcí ukázkových programů byl využit on-line interpret \url{https://home.zcu.cz/~lipka/fjp/pl0/}. Veškeré testovací scénáře jsou uloženy
-v složce \texttt{/src/main/resources}. Nevalidní konstrukce/zápisy jazyka Ligma jsou řádně testovány automatickýmu testy. 
-
-\appendix
-
-\printbibliography
+    Gramatika jazyka, definovaná v souboru \texttt{Ligma.g4}, popisuje lexikální a syntaktická pravidla pro překladač.
+    Obsahuje pravidla pro klíčová slova, datové typy, literály, operátory a struktury, jako jsou cykly, podmínky, funkce a přiřazení hodnot.
+    Zmíněný soubor tvoří základ pro generování derivačního stromu, který je dále využíván v překladači.
     
-\backmatter
-\listoflistings
+    Lexikální část gramatiky (\texttt{lexer rules}) rozpoznává jednotlivé tokeny, zatímco syntaktická část (\texttt{parser rules}) určuje hierarchii a strukturu příkazů. 
+    Gramatika je navržena tak, aby umožnila parsování komplexních výrazů včetně operátorů s~různou prioritou. 
+
+    Pro kontrolu chyb během lexikální a syntaktické analýzy jsme vytvořili vlastní listenery v balíčku \texttt{listener}.
+    Ty zachycují chyby a vytváří výjimky, které obsahují informace o chybě v kódu.
+
+    \section{Sémantická analýza}
+
+    Sémantická analýza je prováděna v průběhu průchodu derivačního stromu.
+    V rámci sémantické analýzy jsou kontrolována pravidla jazyka, jako je např. kontrola deklarace proměnných, kontrola typů operandů, atd.
+    V případě nalezení chyby je vyhozena výjimka, která obsahuje informace o chybě v kódu.
+    Během sémantické analýzy je vytvářena vnitřní reprezentace jazyka, která je následně použita pro generování PL/0 instrukcí.
+
+    Pro sémantickou analýzu slouží třídy v balíčku \texttt{visitor}.
+    Tyto třídy implementují rozhraní \texttt{LigmaBaseVisitor}, které obsahuje metody pro každý typ uzlu v derivačním stromu.
+    Uvnitř těchto metod je prováděna sémantická analýza.
+
+    \subsection{Tabulka symbolů}
+
+    Během sémantické analýzy se také vytváří tabulka symbolů, která obsahuje informace o deklarovaných proměnných a funkcích.
+    Tabulka symbolů je implementována jako zásobník rozsahů, kde každý blok (např. funkce, cyklus) má svůj vlastní rozsah (scope).
+    Každý rozsah pak obsahuje mapu identifikátorů a jejich příslušných informací (datový typ, adresa, ...).
+    Díky tomu je možné jednoduše získat informace o proměnných a funkcích v rámci daného bloku.
+
+    \pagebreak
+
+    \section{Generování PL/0 instrukcí}
+
+    Generování PL/0 instrukcí je prováděno pomocí vnitřní reprezentace jazyka, která byla dříve vytvářena sémantickou analýzou.
+    Vnitřní reprezentace obsahuje informace o jednotlivých částech programu, které jsou následně převedeny do instrukcí jazyka PL/0.
+    Generování instrukcí je prováděno v balíčku \texttt{generator}, přičemž výsledné instrukce jsou ukládány do souboru.
+
+    \subsection{Generování funkcí}
+
+    Jednotlivé funkce jsou generovány jen v případě, že je daná funkce volána.
+    Instrukce funkce se tak po jejím zavolání nachází \glqq uvnitř\grqq \,samotného volání, což lze chápat jako rozvinutí makra v daném místě.
+    Přičemž pomocí pomocné mapy funkcí je zařízeno, že během generování volání funkce se nastaví správná adresa začátku funkce.
+    Pokud je ale stejná funkce volána vícekrát, je generována pouze jednou.
+
+    \subsection{Generování mocniny}
+
+    Generování mocniny jsme vyřešili pomocí \glqq pomocné\grqq \,funkce, která v sobě obsahuje cyklus, který násobí hodnotu základu tolikrát, kolik je hodnota exponentu.
+    Díky tomu byla zajištěna izolace pomocných proměnných a zároveň bylo dosaženo správného výsledku.
+    Ve výrazu mocniny se tak můžou nacházet jak hodnoty, proměnné, tak různě složité výrazy.
+
+    \chapter{Testování}
+
+    % TODO: add test count
+    Projekt obsahuje sadu automatických testů, které testují lexikální, syntaktickou a sémantickou analýzu.
+    Všechny testy (celkem \textbf{TODO} scénářů) jsou automaticky spouštěné při vytváření výsledného \texttt{.jar} souboru pomocí skriptu \texttt{run.sh} (případně \texttt{run.bat} na Windows).
+    Testování bylo prováděno na operačních systémech Windows a macOS.
+    Testy se nachází v adresáři \texttt{/src/test} (dále uvažujme tento soubor).
+
+    Kód překladač zahrnuje logování důležitých informací o průběhu sémantické analýzy a generování instrukcí.
+    Díky důkladnému logování jsme bylo schopni snadno identifikovat chyby a problémy v kódu.
+
+    \section{Lexikální analýza}
+
+    % TODO: add test count
+    Testy pro lexikální analýzu spouští třída \texttt{ExpressionLexicalTest}.
+    Obsahuje celkem \textbf{TODO} negativních testů, které validují správnou funkčnost lexikální analýzy.
+    Testovací soubory se nachází v adresáři \texttt{resources/lexical}.
+
+    \section{Syntaktická analýza}
+
+    % TODO: add test count
+    Testy pro syntaktickou analýzu spouští třída \texttt{ExpressionSyntaxTest}.
+    Obsahuje celkem \textbf{TODO} testů (pozitivních + negativních).
+    Testovací soubory se nachází v adresáři \texttt{resources/syntax}.
+    Důraz u negativních testů byl kladen zejména na provádění neplatných operací (např. chybějící operandy/operátory) či používání neplatných instrukcí.
+
+    \section{Sémantická analýza}
+
+    % TODO: add test count
+    Testy pro sémantickou analýzu spouští třída \texttt{ExpressionSemanticTest}.
+    Obsahuje celkem \textbf{TODO} testů (pozitivních + negativních).
+    Testovací soubory se nachází v adresáři \texttt{resources/semantic}.
+
+    \section{Generování PL/0 instrukcí}
+
+    Ukázkové zdrojové kódy přeložené do instrukční sady \texttt{PL/0} se nachází v adresáři \texttt{/src/main/resources} - složka \texttt{/programs} pro zdrojové kódy jazyku Ligma, složka \texttt{/output} pro vygenerované \texttt{PL/0} instrukce.
+
+    \chapter{Uživatelská dokumentace}
+
+    \section{Prerekvizity}
+
+    Pro úspěšné přeložení je vyžadováno:
+    \begin{itemize}
+        \item Java verze 23 (kvůli podpoře Markdown komentářů)
+        \item Maven verze 3.9.9
+    \end{itemize}
+
+    \section{Instalace a spouštění}
+
+    \begin{enumerate}
+        \item \textbf{Otevření adresáře s aplikací}
+            \begin{itemize}
+                \item Otevřete adresář \texttt{ligma}: \mintinline[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg]{bash}|cd ligma|
+            \end{itemize}
+        \item \textbf{Instalace a spuštění}
+            \begin{itemize}
+                \item Pro \textbf{Windows}: \mintinline[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg]{bash}|run.bat|
+                \item Pro \textbf{Linux} a \textbf{macOS}: \mintinline[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg]{bash}|sh run.sh|
+            \end{itemize}
+    \end{enumerate}
+    Skript spustí příkaz \texttt{mvn clean install}, který stáhne veškeré potřebné knihovny, přeloží projekt (vytvoří adresář \texttt{target} s přeloženými soubory), následně spustí testy a vytvoří finální soubor \texttt{ligma.jar} ve složce \texttt{target}. 
+    
+    Nakonec se spustí ukázkový program a vygeneruje se výstupní soubor s PL/0 instrukcemi.
+    Ve skriptu je možné upravit cestu k ukázkovému programu, který se má přeložit.
+    \\\\
+    Program lze spustit i bez použití skriptu, a to příkazem:
+    \begin{minted}[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg]{bash}
+java -jar ligma.jar <input-file> <output-file>
+    \end{minted}
+    kde \texttt{<input-file>} je cesta k souboru se zdrojovým kódem jazyka Ligma a \texttt{<output-file>} je výsledný soubor s \texttt{PL/0} instrukcemi.
+
+    \chapter{Závěr}
+
+    V rámci semestrální práce byl vytvořen překladač jazyka Ligma do instrukcí \texttt{PL/0}. 
+    Během překládání zdrojových kódů do instrukcí \texttt{PL/0} je průběh překladu podrobně logován do konzole.
+    Pro testování vygenerovaných instrukcí ukázkových programů byl využit on-line interpret \url{https://home.zcu.cz/~lipka/fjp/pl0/}.
+    Veškeré testovací scénáře jsou uloženy v adresáři \texttt{/src/main/resources}.
+    Výsledný překladač byl otestován velkou sadou testů, které pokrývají všechny části jazyka Ligma.
+
+    \appendix
+
+    \printbibliography
+        
+    \backmatter
+    \listoflistings
 
 \end{document}
