@@ -1,7 +1,9 @@
 package ligma.generator;
 
+import ligma.enums.DataType;
 import ligma.enums.Instruction;
 import ligma.exception.GenerateException;
+import ligma.ir.expression.FunctionCallExpression;
 import ligma.ir.function.Function;
 import lombok.Getter;
 import lombok.Setter;
@@ -52,7 +54,16 @@ public abstract class Generator {
                 throw new GenerateException("Could not write instruction '" + instructionString + "' to file");
             }
         }
+    }
 
+    protected static DataType getFunctionReturnType(String functionIdentifier) {
+        for (Function function : functions) {
+            if (function.name().equals(functionIdentifier)) {
+                return function.returnType();
+            }
+        }
+
+        return DataType.INT;
     }
 
 }

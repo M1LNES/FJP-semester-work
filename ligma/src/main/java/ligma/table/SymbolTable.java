@@ -46,6 +46,14 @@ public class SymbolTable {
         scopes.pop();
     }
 
+    public static int getCurrentScopeSize() {
+        if (scopes.isEmpty()) {
+            throw new IllegalStateException("Cannot exit scope: No active scope!");
+        }
+
+        return scopes.peek().getDescriptors().size();
+    }
+
     // Add a descriptor to the current scope
     public static void add(String identifier, Descriptor descriptor) {
         if (scopes.isEmpty()) {
