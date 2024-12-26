@@ -2,6 +2,8 @@
 \usepackage[all]{hypcap} % \ref přesměruje uživatele na obrázek místo captionu obrázku
 \usepackage{minted}
 \usepackage{caption}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 \usepackage{sourcecodepro}
 \usepackage{amsmath}
 \usepackage{dirtree}
@@ -167,10 +169,8 @@ while (a < 5) {
 
     \subsubsection*{Podmínka if (bez else)}
     \begin{minted}[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg]{cpp}
-int a = 1;
-
-if (a != 0) {
-    a = 5;
+if (true) {
+    ...
 }
     \end{minted}
 
@@ -204,6 +204,8 @@ repeat {
     \end{minted}
 
     \subsubsection*{Cyklus for}
+    Automaticky inkrementuje definovanou proměnnou v hlavičce (zde \glqq\texttt{a}\grqq) o 1.
+    Vždy se porovnává, zda proměnná \glqq\texttt{a}\grqq \,je menší než hodnota výrazu za tokenem \glqq\texttt{to}\grqq.
     \begin{minted}[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg]{cpp}
 for (int a = 0 to 10) {
     ...
@@ -223,7 +225,6 @@ if (false) {
     \begin{minted}[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg]{java}
 boolean a = true;
 boolean b = false;
-
 boolean c = a && b;
 boolean d = a || b;
 boolean e = !a;
@@ -232,12 +233,12 @@ boolean g = true != false;
     \end{minted}
 
     \subsubsection*{Násobné přiřazení}
+    Nejdříve se vyhodnocuje výraz na pravé straně.
     \begin{minted}[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg]{java}
 int a = 1;
 int b = 2;
-int c = 3;
 
-a = b = c = 5;
+a = b = 5;
     \end{minted}
 
     \subsubsection*{Parametry předávané hodnotou}
@@ -307,7 +308,7 @@ int a = 2 ^ 5;
 
     \pagebreak
 
-    \section{Gramatika}
+    \section{Lexikální a syntaktická analýza}
 
     Gramatika jazyka, definovaná v souboru \texttt{Ligma.g4}, popisuje lexikální a syntaktická pravidla pro překladač.
     Obsahuje pravidla pro klíčová slova, datové typy, literály, operátory a struktury, jako jsou cykly, podmínky, funkce a přiřazení hodnot.
@@ -358,11 +359,49 @@ int a = 2 ^ 5;
     Díky tomu byla zajištěna izolace pomocných proměnných a zároveň bylo dosaženo správného výsledku.
     Ve výrazu mocniny se tak můžou nacházet jak hodnoty, proměnné, tak různě složité výrazy.
 
+    \pagebreak
+
+    \subsection{Výsledná implementace}
+
+    Výslednou implementaci lze popsat následujícím pseudokódem:
+
+    \begin{algorithm}
+        \caption{Překladač jazyka Ligma}\label{alg:cap}
+        \begin{algorithmic}
+            \State \textbf{Fáze 1: Lexikální analýza}
+            \State \textbf{Vstup:} Zdrojový kód v jazyce Ligma
+            \State \textbf{Výstup:} Seznam tokenů
+            \For{každý znak v kódu}
+                \State \textbf{Pokud} neplatný znak, \textbf{pak} generuj chybu, \textbf{jinak} vytvoř token
+            \EndFor
+            \\
+            \State \textbf{Fáze 2: Syntaktická analýza}
+            \State \textbf{Vstup:} Seznam tokenů
+            \State \textbf{Výstup:} Derivační strom
+            \For{každý token}
+                \State \textbf{Pokud} token neodpovídá syntaxi, \textbf{pak} generuj chybu, \textbf{jinak} vytvoř uzel
+            \EndFor
+            \\
+            \State \textbf{Fáze 3: Sémantická analýza}
+            \State \textbf{Vstup:} Derivační strom
+            \State \textbf{Výstup:} Vnitřní reprezentace jazyka a kontrola sémantiky/typů
+            \For{každý uzel ve stromě}
+                \State \textbf{Pokud} chyba sémantiky/typu, \textbf{pak} generuj chybu, \textbf{jinak} vytvoř vnitřní reprezentaci
+            \EndFor
+            \\
+            \State \textbf{Fáze 4: Generování PL/0 instrukcí}
+            \State \textbf{Vstup:} Vnitřní reprezentace jazyka
+            \State \textbf{Výstup:} Soubor s PL/0 instrukcemi
+            \For{každý objekt}
+                \State \textbf{Pokud} chyba při generování, \textbf{pak} generuj chybu, \textbf{jinak} vygeneruj instrukce
+            \EndFor
+        \end{algorithmic}
+    \end{algorithm}
+
     \chapter{Testování}
 
-    % TODO: add test count
-    Projekt obsahuje sadu automatických testů, které testují lexikální, syntaktickou a sémantickou analýzu.
-    Všechny testy (celkem \textbf{TODO} scénářů) jsou automaticky spouštěné při vytváření výsledného \texttt{.jar} souboru pomocí skriptu \texttt{run.sh} (případně \texttt{run.bat} na Windows).
+    Projekt obsahuje sadu automatických testů, které testují lexikální, syntaktickou a~sémantickou analýzu.
+    Všechny testy (celkem \textbf{242}) jsou automaticky spouštěné při vytváření výsledného \texttt{.jar} souboru pomocí skriptu \texttt{run.sh} (případně \texttt{run.bat} na Windows).
     Testování bylo prováděno na operačních systémech Windows a macOS.
     Testy se nachází v adresáři \texttt{/src/test} (dále uvažujme tento soubor).
 
@@ -371,29 +410,46 @@ int a = 2 ^ 5;
 
     \section{Lexikální analýza}
 
-    % TODO: add test count
     Testy pro lexikální analýzu spouští třída \texttt{ExpressionLexicalTest}.
-    Obsahuje celkem \textbf{TODO} negativních testů, které validují správnou funkčnost lexikální analýzy.
+    Obsahuje celkem \textbf{12} negativních testů, které validují správnou funkčnost lexikální analýzy.
     Testovací soubory se nachází v adresáři \texttt{resources/lexical}.
 
     \section{Syntaktická analýza}
 
-    % TODO: add test count
     Testy pro syntaktickou analýzu spouští třída \texttt{ExpressionSyntaxTest}.
-    Obsahuje celkem \textbf{TODO} testů (pozitivních + negativních).
+    Obsahuje celkem \textbf{148} testů (pozitivních + negativních).
     Testovací soubory se nachází v adresáři \texttt{resources/syntax}.
     Důraz u negativních testů byl kladen zejména na provádění neplatných operací (např. chybějící operandy/operátory) či používání neplatných instrukcí.
 
     \section{Sémantická analýza}
 
-    % TODO: add test count
-    Testy pro sémantickou analýzu spouští třída \texttt{ExpressionSemanticTest}.
-    Obsahuje celkem \textbf{TODO} testů (pozitivních + negativních).
+    Testy pro sémantickou analýzu spouští třídy \texttt{ExpressionSemanticTest} a \texttt{FunctionSemanticTest}.
+    Tyto třídy testují sémantiku a zároveň kontrolují typové chyby výrazů a funkcí.
+    Obsahují celkem \textbf{72} testů (pozitivních + negativních).
     Testovací soubory se nachází v adresáři \texttt{resources/semantic}.
 
     \section{Generování PL/0 instrukcí}
 
-    Ukázkové zdrojové kódy přeložené do instrukční sady \texttt{PL/0} se nachází v adresáři \texttt{/src/main/resources} - složka \texttt{/programs} pro zdrojové kódy jazyku Ligma, složka \texttt{/output} pro vygenerované \texttt{PL/0} instrukce.
+    Testy pro generování PL/0 instrukcí spouští třída \texttt{ExpressionGeneratorTest}.
+    Tato třída vezme ukázkové soubory (celkem \textbf{10}) uvedené v adresáři \texttt{/programs} a vygeneruje z nich PL/0 instrukce do stejnojmenných souborů v adresáři \texttt{/output}.
+    Tímto je zaručeno, že při spuštění skriptu \texttt{run.sh} (případně \texttt{run.bat} na Windows) budou opětovně vygenerovány PL/0 instrukce pro všechny ukázkové programy.
+    Zároveň je zaručeno, že nedojde k žádné chybě při generování instrukcí z ukázkových souborů.
+    
+    Ukázkové zdrojové kódy přeložené do instrukční sady PL/0 se nachází v adresáři \texttt{/src/main/resources} –
+    adresář \texttt{/programs} obsahuje zdrojové kódy jazyka Ligma a adresář \texttt{/output} vygenerované \texttt{PL/0} instrukce.
+
+    \section{Zhodnocení}
+
+    Výsledná implementace byla otestována celkem \textbf{242} testy, které pokrývají všechny části jazyka Ligma.
+    Díky rozsáhlé sadě testů bylo možné identifikovat a odstranit chyby v kódu.
+    Výsledky testování jsou zobrazeny v tabulce a grafu na obr. \ref{fig:tests}.
+
+    \begin{figure}[ht]
+        \centering
+        \includegraphics[width=0.8\textwidth]{images/testy.pdf}
+        \caption{Výsledný počet testů}
+        \label{fig:tests}
+    \end{figure}
 
     \chapter{Uživatelská dokumentace}
 
@@ -418,10 +474,10 @@ int a = 2 ^ 5;
                 \item Pro \textbf{Linux} a \textbf{macOS}: \mintinline[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg]{bash}|sh run.sh|
             \end{itemize}
     \end{enumerate}
-    Skript spustí příkaz \texttt{mvn clean install}, který stáhne veškeré potřebné knihovny, přeloží projekt (vytvoří adresář \texttt{target} s přeloženými soubory), následně spustí testy a vytvoří finální soubor \texttt{ligma.jar} ve složce \texttt{target}. 
+    Skript spustí příkaz \texttt{mvn clean install}, který stáhne veškeré potřebné knihovny, přeloží projekt (vytvoří adresář \texttt{/target} s přeloženými soubory), následně spustí testy a vytvoří finální spustitelný soubor \texttt{ligma.jar} jak v aktuálním adresáři, tak v~adresáři \texttt{/target}. 
     
     Nakonec se spustí ukázkový program a vygeneruje se výstupní soubor s PL/0 instrukcemi.
-    Ve skriptu je možné upravit cestu k ukázkovému programu, který se má přeložit.
+    Ve skriptu je možné upravit cestu k ukázkovému programu, který se má přeložit. Díky spuštěným testům je však zaručeno, že se opětovně vygenerují PL/0 instrukce pro všechny ukázkové programy.
     \\\\
     Program lze spustit i bez použití skriptu, a to příkazem:
     \begin{minted}[fontsize=\footnotesize, numbersep=6pt, bgcolor=codebg]{bash}
@@ -431,10 +487,15 @@ java -jar ligma.jar <input-file> <output-file>
 
     \chapter{Závěr}
 
-    V rámci semestrální práce byl vytvořen překladač jazyka Ligma do instrukcí \texttt{PL/0}. 
-    Během překládání zdrojových kódů do instrukcí \texttt{PL/0} je průběh překladu podrobně logován do konzole.
+    V rámci semestrální práce byl úspěšně vytvořen funkční překladač jazyka Ligma do instrukcí PL/0.
+    
+    Navrhli jsme si vlastní jazyk Ligma, který je popsán gramatikou \texttt{Ligma.g4}.
+    Z~gramatiky je pak nástrojem ANTLR vygenerován derivační strom, který je možné dále procházet či zpracovávat.
+    Při průchodu derivačního stromu jsou kontrolována pravidla jazyka a zároveň je vytvářena vnitřní reprezentace jazyka v podobě objektů.
+    Z~vnitřní reprezentace jsou následně generovány instrukce jazyka PL/0.
+    Celý průběh překladu je podrobně logován do konzole.
+    
     Pro testování vygenerovaných instrukcí ukázkových programů byl využit on-line interpret \url{https://home.zcu.cz/~lipka/fjp/pl0/}.
-    Veškeré testovací scénáře jsou uloženy v adresáři \texttt{/src/main/resources}.
     Výsledný překladač byl otestován velkou sadou testů, které pokrývají všechny části jazyka Ligma.
 
     \appendix
@@ -442,6 +503,6 @@ java -jar ligma.jar <input-file> <output-file>
     \printbibliography
         
     \backmatter
-    \listoflistings
+    \listoffigures
 
 \end{document}

@@ -1,7 +1,6 @@
 package ligma;
 
 import ligma.generated.LigmaParser;
-import ligma.generator.FunctionGenerator;
 import ligma.generator.Generator;
 import ligma.generator.ProgramGenerator;
 import ligma.ir.program.Program;
@@ -23,7 +22,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 
-class ProgramExampleTest {
+class ProgramGeneratorTest {
 
     private void runGeneration(String resourcePath, String outputPath) throws IOException {
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(resourcePath);
