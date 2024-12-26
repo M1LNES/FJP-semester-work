@@ -2,5 +2,5 @@ cykly();
 
 
 func int cykly() {
-return cykly();
+    return cykly();
 }

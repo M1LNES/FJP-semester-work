@@ -10,6 +10,7 @@ import ligma.ir.statement.Statement;
 import ligma.table.Descriptor;
 import ligma.table.SymbolTable;
 import ligma.table.VariableDescriptor;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -18,24 +19,34 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/// @author Milan Janoch & Jakub Pavlicek
+/// @version 1.0
+///
+/// Generates code for function calls and functions.
 @Slf4j
 @Setter
 @RequiredArgsConstructor
 public class FunctionGenerator extends Generator {
 
-    private static final Map<String, Integer> functionAddresses = new HashMap<>();
-
+    /// Expression generator used to generate code for individual expressions.
     private static final ExpressionGenerator expressionGenerator = new ExpressionGenerator();
+    /// Statement generator used to generate code for function statements.
     private static final StatementGenerator statementGenerator = new StatementGenerator();
 
-    /// function call - can be statement or expression
+    /// The callable function for which code will be generated (can be a statement or an expression).
     private Callable functionCall;
 
+    /// Generates PL/0 instructions for the provided function call.
     @Override
     public void generate() {
         generateFunctionCall(functionCall);
     }
 
+    /// Generates PL/0 instructions for a function call.
+    /// The method processes the function's identifier, arguments, and checks for matching parameters.
+    /// It also allocates space for the return value and generates the instructions to call the function.
+    ///
+    /// @param functionCall the function call to generate code for
     private void generateFunctionCall(Callable functionCall) {
         log.debug("Generating function call");
         String identifier = functionCall.getIdentifier();
@@ -111,6 +122,11 @@ public class FunctionGenerator extends Generator {
         modifyInstructionAddress(jmpIndex, afterFunctionBodyIndex + 1);
     }
 
+    /// Generates PL/0 instructions for the function body.
+    /// This includes setting up the symbol table, generating instructions for parameters,
+    /// allocating space for the activation record, and generating code for the function's body.
+    ///
+    /// @param function the function for which to generate code
     private void generateFunction(Function function) {
         log.debug("Generating function");
 
@@ -156,6 +172,9 @@ public class FunctionGenerator extends Generator {
         log.debug("Finished generating function");
     }
 
+    /// Adds the parameters of a function to the symbol table.
+    ///
+    /// @param parameters the list of function parameters to add to the symbol table
     private void addParametersToTheSymbolTable(List<FunctionParameter> parameters) {
         for (FunctionParameter parameter : parameters) {
             Descriptor paramDescriptor = VariableDescriptor.builder()

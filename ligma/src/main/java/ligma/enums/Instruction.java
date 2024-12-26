@@ -1,5 +1,10 @@
 package ligma.enums;
 
+/// @author Milan Janoch & Jakub Pavlicek
+/// @version 1.0
+///
+/// Represents a PL/0 instruction
+///
 /// #### Stack Operations
 /// - **`lit 0, A`**: Push the constant `A` onto the stack.
 /// - **`opr 0, A`**: Execute instruction `A`.

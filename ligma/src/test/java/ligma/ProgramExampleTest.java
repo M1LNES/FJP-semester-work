@@ -1,21 +1,22 @@
 package ligma;
 
-import ligma.generated.LigmaLexer;
 import ligma.generated.LigmaParser;
+import ligma.generator.FunctionGenerator;
 import ligma.generator.Generator;
 import ligma.generator.ProgramGenerator;
 import ligma.ir.program.Program;
-import ligma.listener.EnhancedLigmaLexer;
-import ligma.listener.SyntaxErrorListener;
 import ligma.visitor.ProgramVisitor;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -24,49 +25,50 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 
 class ProgramExampleTest {
 
-    private void runSemanticAnalysis(String resourcePath) throws IOException {
-        Program program = null;
-
+    private void runGeneration(String resourcePath, String outputPath) throws IOException {
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(resourcePath);
         CharStream charStream = CharStreams.fromStream(Objects.requireNonNull(inputStream));
-        LigmaLexer lexer = new EnhancedLigmaLexer(charStream);
-        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-        LigmaParser parser = new LigmaParser(tokenStream);
 
-        // Add syntax error listener
-        SyntaxErrorListener syntaxErrorListener = new SyntaxErrorListener();
-        parser.addErrorListener(syntaxErrorListener);
+        // Run lexical and syntax analysis and get the program context
+        LigmaParser.ProgramContext programContext = App.getProgramContext(charStream);
 
-        LigmaParser.ProgramContext programContext = parser.program();
-
+        // Run semantic analysis
         ProgramVisitor programVisitor = new ProgramVisitor();
-        program = programVisitor.visit(programContext);
+        Program program = programVisitor.visit(programContext);
 
-        BufferedWriter writer = new BufferedWriter(Writer.nullWriter());
-        Generator.setWriter(writer);
-
+        // Run generation
         Generator programGenerator = new ProgramGenerator(program);
         programGenerator.generate();
 
-        Generator.writeInstructions();
+        // Write the instructions to the output file
+        BufferedWriter writer = new BufferedWriter(new FileWriter(outputPath));
+        Generator.writeInstructions(writer);
 
+        Generator.clear();
         inputStream.close();
+        writer.close();
     }
 
-    private static Stream<Arguments> loadFiles(String resourceFolder) {
-        File folder = Path.of("src/main/resources", resourceFolder).toFile();
-        return Stream.of(Objects.requireNonNull(folder.listFiles()))
-                .map(file -> Arguments.of(file.getName(), resourceFolder + "/" + file.getName()));
+    private static Stream<Arguments> loadFiles(String resourceFolder, String outputFolder) {
+        File inFolder = Path.of("src/main/resources", resourceFolder).toFile();
+        File outFolder = Path.of("src/main/resources", outputFolder).toFile();
+
+        return Stream.of(Objects.requireNonNull(inFolder.listFiles()))
+                .map(file -> Arguments.of(
+                    file.getName(),
+                    resourceFolder + File.separator + file.getName(),
+                    outFolder + File.separator + file.getName())
+                );
     }
 
     static Stream<Arguments> testExampleFiles() {
-        return loadFiles("programs");
+        return loadFiles("programs", "output");
     }
 
     @ParameterizedTest(name = "Valid file: {0}")
     @MethodSource("testExampleFiles")
-    void validFilesShouldNotThrowExceptions(String fileName, String resourcePath) {
-        assertThatCode(() -> runSemanticAnalysis(resourcePath))
+    void validFilesShouldNotThrowExceptions(String fileName, String resourcePath, String outputPath) {
+        assertThatCode(() -> runGeneration(resourcePath, outputPath))
                 .doesNotThrowAnyException();
     }
 

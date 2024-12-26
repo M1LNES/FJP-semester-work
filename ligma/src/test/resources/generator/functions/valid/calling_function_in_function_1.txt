@@ -1,13 +1,13 @@
 int a = add(pet(),sest());
 
 func int add(int a, int b){
-return a + b;
+    return a + b;
 }
 
 func int pet() {
-return 5;
+    return 5;
 }
 
 func int sest() {
-return 6;
+    return 6;
 }

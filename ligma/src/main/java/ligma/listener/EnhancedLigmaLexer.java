@@ -7,6 +7,12 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.LexerNoViableAltException;
 import org.antlr.v4.runtime.misc.Interval;
 
+/// @author Milan Janoch & Jakub Pavlicek
+/// @version 1.0
+///
+/// An enhanced lexer for the Ligma language with improved error handling.
+/// Overrides the default ANTLR lexer behavior to provide detailed error messages
+/// and logs them for debugging purposes.
 @Slf4j
 public class EnhancedLigmaLexer extends LigmaLexer {
 

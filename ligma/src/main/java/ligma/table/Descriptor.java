@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+/// @author Milan Janoch & Jakub Pavlicek
+/// @version 1.0
+///
 /// Descriptor used in the Symbol Table.
 @Getter
 @Setter

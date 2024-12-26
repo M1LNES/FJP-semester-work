@@ -23,15 +23,23 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
+/// @author Milan Janoch & Jakub Pavlicek
+/// @version 1.0
+///
+/// Generates statement PL/0 instructions, including variable definitions, assignments, loops, etc.
 @Slf4j
 @Setter
 public class StatementGenerator extends Generator {
 
+    /// Expression generator used to evaluate expressions in statements.
     private static final ExpressionGenerator expressionGenerator = new ExpressionGenerator();
+    /// Function generator used to handle function calls.
     private static final FunctionGenerator functionGenerator = new FunctionGenerator();
 
+    /// List of statements to be generated.
     private List<Statement> statements;
 
+    /// Generates PL/0 instructions for the statements by iterating through each and delegating to the appropriate method based on the statement type.
     @Override
     public void generate() {
         // Generate statements
@@ -51,6 +59,9 @@ public class StatementGenerator extends Generator {
         }
     }
 
+    /// Generates PL/0 instructions for a variable definition.
+    ///
+    /// @param varDef The variable definition to process.
     private void generateVariableDefinition(VariableDefinition varDef) {
         log.debug("Generating variable definition");
         String identifier = varDef.getIdentifier();
@@ -85,6 +96,9 @@ public class StatementGenerator extends Generator {
         addInstruction(Instruction.STO, SymbolTable.getLevel(identifier), descriptor.getAddres());
     }
 
+    /// Generates PL/0 instructions for a constant definition.
+    ///
+    /// @param constDef The constant definition to process.
     private void generateConstantDefinition(ConstantDefinition constDef) {
         log.debug("Generating constant definition");
         String identifier = constDef.getIdentifier();
@@ -118,6 +132,9 @@ public class StatementGenerator extends Generator {
         addInstruction(Instruction.STO, 0, descriptor.getAddres());
     }
 
+    /// Generates PL/0 instructions for an assignment.
+    ///
+    /// @param assignment The assignment to process.
     private void generateAssignment(Assignment assignment) {
         log.debug("Generating assignment");
 
@@ -151,6 +168,9 @@ public class StatementGenerator extends Generator {
         }
     }
 
+    /// Generates PL/0 instructions for an if statement.
+    ///
+    /// @param ifStatement The if statement to process.
     private void generateIfStatement(IfStatement ifStatement) {
         log.debug("Generating if statement");
 
@@ -204,6 +224,9 @@ public class StatementGenerator extends Generator {
         SymbolTable.exitScope();
     }
 
+    /// Generates PL/0 instructions for a for loop.
+    ///
+    /// @param forLoop The for loop to process.
     private void generateForLoop(ForLoop forLoop) {
         log.debug("Generating for loop");
 
@@ -267,6 +290,9 @@ public class StatementGenerator extends Generator {
         SymbolTable.exitScope();
     }
 
+    /// Generates PL/0 instructions for a while loop.
+    ///
+    /// @param whileLoop The while loop to process.
     private void generateWhile(WhileLoop whileLoop) {
         log.debug("Generating while loop");
 
@@ -302,6 +328,9 @@ public class StatementGenerator extends Generator {
         SymbolTable.exitScope();
     }
 
+    /// Generates PL/0 instructions for a do-while loop.
+    ///
+    /// @param doWhileLoop The do-while loop to process.
     private void generateDoWhile(DoWhileLoop doWhileLoop) {
         log.debug("Generating do while loop");
 
@@ -338,6 +367,9 @@ public class StatementGenerator extends Generator {
         SymbolTable.exitScope();
     }
 
+    /// Generates PL/0 instructions for a repeat-until loop.
+    ///
+    /// @param repeatUntilLoop The repeat-until loop to process.
     private void generateRepeatUntil(RepeatUntilLoop repeatUntilLoop) {
         log.debug("Generating repeat until loop");
 
@@ -364,11 +396,19 @@ public class StatementGenerator extends Generator {
         SymbolTable.exitScope();
     }
 
+    /// Generates PL/0 instructions for a function call.
+    ///
+    /// @param functionCall The function call to process.
     private void generateFunctionCall(FunctionCall functionCall) {
         functionGenerator.setFunctionCall(functionCall);
         functionGenerator.generate();
     }
 
+    /// Validates that the assignment is compatible with the data type.
+    ///
+    /// @param descriptor The descriptor of the variable to which the value will be assigned.
+    /// @param expression The expression to be assigned.
+    /// @throws GenerateException if the data types do not match.
     private void validateAssignmentType(Descriptor descriptor, Expression expression) {
         // Validate that the data types are compatible (needed because of functions)
         if (descriptor.getType() != expression.getType()) {
