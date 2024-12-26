@@ -3,6 +3,10 @@ package ligma.enums;
 import ligma.exception.SemanticException;
 import lombok.Getter;
 
+/// @author Milan Janoch & Jakub Pavlicek
+/// @version 1.0
+///
+/// Represents different data types supported in the language.
 @Getter
 public enum DataType {
 

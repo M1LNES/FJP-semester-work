@@ -1,22 +1,22 @@
 package ligma;
 
 import ligma.exception.GenerateException;
-import ligma.generated.LigmaLexer;
 import ligma.generated.LigmaParser;
 import ligma.generator.Generator;
 import ligma.generator.ProgramGenerator;
 import ligma.ir.program.Program;
-import ligma.listener.EnhancedLigmaLexer;
-import ligma.listener.SyntaxErrorListener;
 import ligma.visitor.ProgramVisitor;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Writer;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -24,34 +24,26 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class FunctionGeneratorTest {
+class FunctionSemanticTest {
 
     private void runSemanticAnalysis(String resourcePath) throws IOException {
-        Program program = null;
-
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(resourcePath);
         CharStream charStream = CharStreams.fromStream(Objects.requireNonNull(inputStream));
-        LigmaLexer lexer = new EnhancedLigmaLexer(charStream);
-        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-        LigmaParser parser = new LigmaParser(tokenStream);
 
-        // Add syntax error listener
-        SyntaxErrorListener syntaxErrorListener = new SyntaxErrorListener();
-        parser.addErrorListener(syntaxErrorListener);
+        LigmaParser.ProgramContext programContext = App.getProgramContext(charStream);
 
-        LigmaParser.ProgramContext programContext = parser.program();
-
+        // Visit the parsed program context using the ProgramVisitor
         ProgramVisitor programVisitor = new ProgramVisitor();
-        program = programVisitor.visit(programContext);
+        Program program = programVisitor.visit(programContext);
 
-        BufferedWriter writer = new BufferedWriter(Writer.nullWriter());
-        Generator.setWriter(writer);
-
+        // Initialize program generator and generate PL/0 instructions
         Generator programGenerator = new ProgramGenerator(program);
         programGenerator.generate();
 
-        Generator.writeInstructions();
+        BufferedWriter writer = new BufferedWriter(Writer.nullWriter());
+        Generator.writeInstructions(writer);
 
+        Generator.clear();
         inputStream.close();
     }
 

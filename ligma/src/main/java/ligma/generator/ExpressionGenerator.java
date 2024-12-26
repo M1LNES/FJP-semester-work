@@ -21,14 +21,21 @@ import ligma.table.SymbolTable;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+/// @author Milan Janoch & Jakub Pavlicek
+/// @version 1.0
+///
+/// Generates code for various types of expressions.
 @Slf4j
 @Setter
 public class ExpressionGenerator extends Generator {
 
+    /// Static instance of FunctionGenerator for function-related expression generation
     private static final FunctionGenerator functionGenerator = new FunctionGenerator();
 
+    /// The current expression being generated
     private Expression expression;
 
+    /// Generates the appropriate PL/0 instructions based on the expression type.
     @Override
     public void generate() {
         switch (expression) {
@@ -48,11 +55,18 @@ public class ExpressionGenerator extends Generator {
         }
     }
 
+    /// Helper method to trigger the generation of an expression.
+    /// Sets the current expression and calls the generate method.
+    ///
+    /// @param expression the expression to generate
     private void generateExpression(Expression expression) {
         this.expression = expression;
         generate();
     }
 
+    /// Generates the PL/0 instructions for a power expression (e.g., 2 ^ 5).
+    ///
+    /// @param powerExpression the power expression to generate
     private void generatePowerExpression(PowerExpression powerExpression) {
         log.debug("Generating power expression");
         Expression left = powerExpression.getLeft();
@@ -166,6 +180,9 @@ public class ExpressionGenerator extends Generator {
         modifyInstructionAddress(jmpIndex, afterFunctionBodyIndex + 1);
     }
 
+    /// Generates the PL/0 instructions for a unary minus expression (e.g., -a).
+    ///
+    /// @param unaryMinusExpression the unary minus expression to generate
     private void genUnaryMinusExpression(UnaryMinusExpression unaryMinusExpression) {
         log.debug("Generating unary minus expression");
         Expression expressionUnary = unaryMinusExpression.getExpression();
@@ -186,6 +203,9 @@ public class ExpressionGenerator extends Generator {
         }
     }
 
+    /// Generates the PL/0 instructions for a unary plus expression (e.g., +a).
+    ///
+    /// @param unaryPlusExpression the unary plus expression to generate
     private void genUnaryPlusExpression(UnaryPlusExpression unaryPlusExpression) {
         log.debug("Generating unary plus expression");
         Expression expressionUnary = unaryPlusExpression.getExpression();
@@ -197,6 +217,9 @@ public class ExpressionGenerator extends Generator {
         }
     }
 
+    /// Generates the PL/0 instructions for a logical NOT expression (e.g., !a).
+    ///
+    /// @param notExpression the NOT expression to generate
     private void genNotExpression(NotExpression notExpression) {
         log.debug("Generating not expression");
         Expression expressionNot = notExpression.getExpression();
@@ -218,6 +241,9 @@ public class ExpressionGenerator extends Generator {
         }
     }
 
+    /// Generates the PL/0 instructions for multiplicative expressions (e.g., a * b, a / b, a % b).
+    ///
+    /// @param multiplicativeExpression the multiplicative expression to generate
     private void genMultiplicativeExpression(MultiplicativeExpression multiplicativeExpression) {
         log.debug("Generating multiplicative expression");
         Expression left = multiplicativeExpression.getLeft();
@@ -258,6 +284,9 @@ public class ExpressionGenerator extends Generator {
         }
     }
 
+    /// Generates the PL/0 instructions for additive expressions (e.g., a + b, a - b).
+    ///
+    /// @param additiveExpression the additive expression to generate
     private void genAdditiveExpression(AdditiveExpression additiveExpression) {
         log.debug("Generating additive expression");
         Expression left = additiveExpression.getLeft();
@@ -289,6 +318,9 @@ public class ExpressionGenerator extends Generator {
         }
     }
 
+    /// Generates the PL/0 instructions for comparison expressions (e.g., a == b, a != b, a > b, etc.).
+    ///
+    /// @param comparisonExpression the comparison expression to generate
     private void genComparisonExpression(ComparisonExpression comparisonExpression) {
         log.debug("Generating comparison expression");
         Expression left = comparisonExpression.getLeft();
@@ -356,6 +388,9 @@ public class ExpressionGenerator extends Generator {
         }
     }
 
+    /// Generates the PL/0 instructions for logical expressions (e.g., a && b, a || b).
+    ///
+    /// @param logicalExpression the logical expression to generate
     private void genLogicalExpression(LogicalExpression logicalExpression) {
         log.debug("Generating logical expression");
         Expression left = logicalExpression.getLeft();
@@ -391,6 +426,10 @@ public class ExpressionGenerator extends Generator {
         }
     }
 
+    /// Generates the PL/0 instructions for parenthesized expressions (e.g., (a + b)).
+    /// Parentheses simply alter the order of evaluation.
+    ///
+    /// @param parenthesizedExpression the parenthesized expression to generate
     private void genParenthesizedExpression(ParenthesizedExpression parenthesizedExpression) {
         log.debug("Generating parenthesized expression");
         Expression parenthesizedExpr = parenthesizedExpression.getExpression();
@@ -398,6 +437,9 @@ public class ExpressionGenerator extends Generator {
         generateExpression(parenthesizedExpr);
     }
 
+    /// Generates the PL/0 instructions for an identifier expression (e.g., variable lookup).
+    ///
+    /// @param identifier the identifier expression to generate
     private void genIdentifierExpression(Identifier identifier) {
         String idenName = identifier.getName();
         Descriptor descriptor = SymbolTable.lookup(idenName);
@@ -405,6 +447,9 @@ public class ExpressionGenerator extends Generator {
         addInstruction(Instruction.LOD, SymbolTable.getLevel(idenName), descriptor.getAddres());
     }
 
+    /// Generates the PL/0 instructions for literal expressions (e.g., integers, booleans).
+    ///
+    /// @param literal the literal expression to generate
     private void generateLiteral(Literal<?> literal) {
         switch (literal.getValue()) {
             case Integer integer -> addInstruction(Instruction.LIT, 0, integer);
@@ -413,6 +458,9 @@ public class ExpressionGenerator extends Generator {
         }
     }
 
+    /// Generates the PL/0 instructions for a function call expression (e.g., function(a, b)).
+    ///
+    /// @param functionCall the function call expression to generate
     private void generateFunctionCallExpression(FunctionCallExpression functionCall) {
         functionGenerator.setFunctionCall(functionCall);
         functionGenerator.generate();

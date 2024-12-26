@@ -1,6 +1,5 @@
 int neco = vratNeco(sest(),true);
 
-
 func int vratNeco(int ano, boolean b){
     int vysledek = ano;
     if (b) {
@@ -10,5 +9,5 @@ func int vratNeco(int ano, boolean b){
 }
 
 func int sest() {
-return 6;
+    return 6;
 }

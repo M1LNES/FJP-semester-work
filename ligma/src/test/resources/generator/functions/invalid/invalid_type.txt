@@ -1,5 +1,5 @@
 int a = vratBoolean();
 
 func boolean vratBoolean() {
-return true;
+    return true;
 }
