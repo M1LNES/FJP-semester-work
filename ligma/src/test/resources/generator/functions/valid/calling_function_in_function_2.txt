@@ -1,0 +1,14 @@
+int neco = vratNeco(sest(),true);
+
+
+func int vratNeco(int ano, boolean b){
+    int vysledek = ano;
+    if (b) {
+        vysledek = 1000;
+    }
+    return vysledek;
+}
+
+func int sest() {
+return 6;
+}

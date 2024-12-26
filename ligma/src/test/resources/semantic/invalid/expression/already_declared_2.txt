@@ -1,0 +1,9 @@
+boolean mew = true;
+
+if (mew) {
+int in = 100;
+if (true){
+int ba = 0;
+}
+int in = 25;
+}

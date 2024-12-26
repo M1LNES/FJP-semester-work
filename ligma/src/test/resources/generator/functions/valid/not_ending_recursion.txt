@@ -1,0 +1,6 @@
+cykly();
+
+
+func int cykly() {
+return cykly();
+}

@@ -1,0 +1,5 @@
+int y = x;
+
+func int foo() {
+    int x = 10;
+}

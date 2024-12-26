@@ -1,0 +1,5 @@
+boolean b = vratNeco();
+
+func boolean vratNeco(){
+return 150;
+}
