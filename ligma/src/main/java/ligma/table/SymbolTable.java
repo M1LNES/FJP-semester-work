@@ -125,4 +125,9 @@ public class SymbolTable {
         }
     }
 
+    /// Clear all scopes
+    public static void clear() {
+        scopes.clear();
+    }
+
 }
