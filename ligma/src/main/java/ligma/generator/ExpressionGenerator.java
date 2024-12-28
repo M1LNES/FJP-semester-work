@@ -107,9 +107,6 @@ public class ExpressionGenerator extends Generator {
         // Save base address
         int baseAddress = SymbolTable.getNextAddress();
 
-        // Exponent
-        generateExpression(right);
-
         // Exponent as counter
         generateExpression(right);
 
@@ -161,7 +158,7 @@ public class ExpressionGenerator extends Generator {
         modifyInstructionAddress(jmcIndex, loopEnd + 1);
 
         // Clean the result of JMC, base and exponent
-        addInstruction(Instruction.INT, 0, -3);
+        addInstruction(Instruction.INT, 0, -2);
 
         // Save the result of the power expression to the allocated space
         addInstruction(Instruction.STO, 0, -1);

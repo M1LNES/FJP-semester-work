@@ -4,9 +4,11 @@ import ligma.generated.LigmaParser;
 import ligma.generator.Generator;
 import ligma.generator.ProgramGenerator;
 import ligma.ir.program.Program;
+import ligma.table.SymbolTable;
 import ligma.visitor.ProgramVisitor;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -23,6 +25,12 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 class ProgramGeneratorTest {
+
+    @BeforeEach
+    void setUp() {
+        SymbolTable.clear();
+        Generator.clear();
+    }
 
     private void runGeneration(String resourcePath, String outputPath) throws IOException {
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(resourcePath);
@@ -43,7 +51,6 @@ class ProgramGeneratorTest {
         BufferedWriter writer = new BufferedWriter(new FileWriter(outputPath));
         Generator.writeInstructions(writer);
 
-        Generator.clear();
         inputStream.close();
         writer.close();
     }
