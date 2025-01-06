@@ -46,7 +46,7 @@ public class ExpressionVisitor extends LigmaBaseVisitor<Expression> {
         Expression right = visit(ctx.expression(1));
 
         if (left.getType() != DataType.INT || right.getType() != DataType.INT) {
-            throw new SemanticException("Cannot apply the 'pow' operation to non-int type");
+            throw new SemanticException("Cannot apply the 'pow' operation to non-int type (line " + ctx.getStart().getLine() + ")");
         }
 
         return new PowerExpression(Operator.POW, left, right, DataType.INT);
@@ -63,7 +63,7 @@ public class ExpressionVisitor extends LigmaBaseVisitor<Expression> {
         Expression expression = visit(ctx.expression());
 
         if (expression.getType() != DataType.INT) {
-            throw new SemanticException("Cannot apply the 'unary minus' operation to non-int type");
+            throw new SemanticException("Cannot apply the 'unary minus' operation to non-int type (line " + ctx.getStart().getLine() + ")");
         }
 
         return new UnaryMinusExpression(Operator.SUB, expression, DataType.INT);
@@ -80,7 +80,10 @@ public class ExpressionVisitor extends LigmaBaseVisitor<Expression> {
         Expression expression = visit(ctx.expression());
 
         if (expression.getType() != DataType.INT) {
-            throw new SemanticException("Cannot apply the 'unary plus' operation to non-int type");
+            throw new SemanticException(
+                "Cannot apply the 'unary plus' operation to non-int type" +
+                " (line " + ctx.getStart().getLine() + ")"
+            );
         }
 
         return new UnaryPlusExpression(Operator.ADD, expression, DataType.INT);
@@ -99,7 +102,10 @@ public class ExpressionVisitor extends LigmaBaseVisitor<Expression> {
         DataType expressionType = expression.getType();
 
         if (expressionType != DataType.BOOLEAN) {
-            throw new SemanticException("Cannot negate non-boolean type: " + expressionType);
+            throw new SemanticException(
+                "Cannot negate non-boolean type: " + expressionType +
+                " (line " + ctx.getStart().getLine() + ")"
+            );
         }
 
         return new NotExpression(Operator.NOT, expression, expressionType);
@@ -118,7 +124,10 @@ public class ExpressionVisitor extends LigmaBaseVisitor<Expression> {
         Expression right = visit(ctx.expression(1));
 
         if (left.getType() != DataType.INT || right.getType() != DataType.INT) {
-            throw new SemanticException("Cannot apply the '" + operator.getSymbol() + "' operation to non-int type");
+            throw new SemanticException(
+                "Cannot apply the '" + operator.getSymbol() + "' operation to non-int type" +
+                " (line " + ctx.getStart().getLine() + ")"
+            );
         }
 
         return new MultiplicativeExpression(operator, left, right, DataType.INT);
@@ -137,7 +146,10 @@ public class ExpressionVisitor extends LigmaBaseVisitor<Expression> {
         Expression right = visit(ctx.expression(1));
 
         if (left.getType() != DataType.INT || right.getType() != DataType.INT) {
-            throw new SemanticException("Cannot apply the '" + operator.getSymbol() + "' operation to non-int type");
+            throw new SemanticException(
+                "Cannot apply the '" + operator.getSymbol() + "' operation to non-int type" +
+                " (line " + ctx.getStart().getLine() + ")"
+            );
         }
 
         return new AdditiveExpression(operator, left, right, DataType.INT);
@@ -161,7 +173,8 @@ public class ExpressionVisitor extends LigmaBaseVisitor<Expression> {
             if (!left.getType().equals(right.getType())) {
                 throw new SemanticException(
                     "Cannot evaluate comparison: " + operator.getSymbol() +
-                    " for non-matching types [" + left.getType() + ", " + right.getType() + "]"
+                    " for non-matching types [" + left.getType() + ", " + right.getType() + "]" +
+                    " (line " + ctx.getStart().getLine() + ")"
                 );
             }
         }
@@ -169,7 +182,10 @@ public class ExpressionVisitor extends LigmaBaseVisitor<Expression> {
         else {
             // Both expressions need to be int
             if (left.getType() != DataType.INT || right.getType() != DataType.INT) {
-                throw new SemanticException("Cannot apply the operation to non-int type");
+                throw new SemanticException(
+                    "Cannot apply the operation to non-int type" +
+                    " (line " + ctx.getStart().getLine() + ")"
+                );
             }
         }
 
@@ -191,7 +207,10 @@ public class ExpressionVisitor extends LigmaBaseVisitor<Expression> {
 
         // Both expressions must be of type boolean
         if (left.getType() != DataType.BOOLEAN || right.getType() != DataType.BOOLEAN) {
-            throw new SemanticException("Cannot evaluate logical expression with non-boolean types");
+            throw new SemanticException(
+                "Cannot evaluate logical expression with non-boolean types" +
+                " (line " + ctx.getStart().getLine() + ")"
+            );
         }
 
         // Data type of the logical expression is always boolean
@@ -223,7 +242,10 @@ public class ExpressionVisitor extends LigmaBaseVisitor<Expression> {
         Descriptor descriptor = SymbolTable.lookup(identifier);
 
         if (descriptor == null) {
-            throw new SemanticException("Identifier: " + identifier + " was not declared");
+            throw new SemanticException(
+                "Identifier: " + identifier + " was not declared" +
+                " (line " + ctx.getStart().getLine() + ")"
+            );
         }
 
         return new Identifier(identifier, descriptor.getType());

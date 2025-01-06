@@ -70,7 +70,8 @@ public class FunctionVisitor extends LigmaBaseVisitor<Object> {
         if (returnExpr.getType() != returnType) {
             throw new SemanticException(
                 "Function's return type is: " + type +
-                ", but the provided type was: " + returnExpr.getType().name().toLowerCase()
+                ", but the provided type was: " + returnExpr.getType().name().toLowerCase() +
+                " (line " + ctx.getStart().getLine() + ")"
             );
         }
 

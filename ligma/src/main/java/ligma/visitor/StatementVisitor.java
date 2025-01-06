@@ -55,7 +55,10 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
 
         // Redeclaration of the same identifier in the current scope
         if (SymbolTable.isIdentifierInCurrentScope(identifier)) {
-            throw new SemanticException("Variable '" + identifier + "' is already defined in the scope");
+            throw new SemanticException(
+                "Variable '" + identifier + "' is already defined in the scope" +
+                " (line " + ctx.getStart().getLine() + ")"
+            );
         }
 
         DataType dataType = DataType.getDataType(type);
@@ -64,8 +67,9 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
         // Type mismatch
         if (!(expression instanceof FunctionCallExpression) && dataType != expression.getType()) {
             throw new SemanticException(
-                "Cannot assign the value to the variable '" + identifier
-                + "': type mismatch [" + dataType + ", " + expression.getType() + "]"
+                "Cannot assign the value to the variable '" + identifier +
+                "': type mismatch [" + dataType + ", " + expression.getType() + "]" +
+                " (line " + ctx.getStart().getLine() + ")"
             );
         }
 
@@ -89,7 +93,10 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
 
         // Redeclaration of the same identifier in the current scope
         if (SymbolTable.isIdentifierInCurrentScope(identifier)) {
-            throw new SemanticException("Variable '" + identifier + "' is already defined in the scope");
+            throw new SemanticException(
+                "Variable '" + identifier + "' is already defined in the scope" +
+                " (line " + ctx.getStart().getLine() + ")"
+            );
         }
 
         DataType dataType = DataType.getDataType(type);
@@ -98,8 +105,9 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
         // Type mismatch
         if (!(expression instanceof FunctionCallExpression) && dataType != expression.getType()) {
             throw new SemanticException(
-                "Cannot assign the value to the constant variable '" + identifier
-                    + "': type mismatch [" + dataType + ", " + expression.getType() + "]"
+                "Cannot assign the value to the constant variable '" + identifier +
+                "': type mismatch [" + dataType + ", " + expression.getType() + "]" +
+                " (line " + ctx.getStart().getLine() + ")"
             );
         }
 
@@ -139,16 +147,29 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
             switch (descriptor) {
                 // Reassigment to constant is not allowed
                 case VariableDescriptor varDesc when varDesc.isConstant() ->
-                    throw new SemanticException("Cannot assign new value to constant '" + varDesc.getName() + "'");
+                    throw new SemanticException(
+                        "Cannot assign new value to constant '" + varDesc.getName() + "'" +
+                        " (line " + ctx.getStart().getLine() + ")"
+                    );
                 // Cannot assign value to a function
                 case FunctionDescriptor funcDesc ->
-                    throw new SemanticException("Cannot assign new value to a function '" + funcDesc.getName() + "'");
+                    throw new SemanticException(
+                        "Cannot assign new value to a function '" + funcDesc.getName() + "'" +
+                        " (line " + ctx.getStart().getLine() + ")"
+                    );
                 // Identifier was not found in the traversed scopes
-                case null -> throw new SemanticException("Variable " + iden + " was not declared yet");
+                case null ->
+                    throw new SemanticException(
+                        "Variable " + iden + " was not declared yet" +
+                        " (line " + ctx.getStart().getLine() + ")"
+                    );
                 default -> {
                     // Type mismatch
                     if (!(expression instanceof Callable) && descriptor.getType() != expression.getType()) {
-                        throw new SemanticException("Variable '" + iden + "' is not of type " + expression.getType());
+                        throw new SemanticException(
+                            "Variable '" + iden + "' is not of type " + expression.getType() +
+                            " (line " + ctx.getStart().getLine() + ")"
+                        );
                     }
                 }
             }
@@ -173,7 +194,10 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
 
         // Expression must be of type boolean
         if (expression.getType() != DataType.BOOLEAN) {
-            throw new SemanticException("Condition must be a boolean type");
+            throw new SemanticException(
+                "Condition must be a boolean type" +
+                " (line " + ctx.getStart().getLine() + ")"
+            );
         }
 
         // Traverse statements in the 'if' body
@@ -224,11 +248,17 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
 
         // For loop initialization expression must be of type int
         if (expression.getType() != DataType.INT) {
-            throw new SemanticException("For loop initialization expression must be of type int");
+            throw new SemanticException(
+                "For loop initialization expression must be of type int" +
+                " (line " + ctx.getStart().getLine() + ")"
+            );
         }
         // For loop range must be of type int
         if (toExpression.getType() != DataType.INT) {
-            throw new SemanticException("For loop range must be of type int");
+            throw new SemanticException(
+                "For loop range must be of type int" +
+                " (line " + ctx.getStart().getLine() + ")"
+            );
         }
 
         // Traverse statements in the for loop body
@@ -258,7 +288,10 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
 
         // Expression must be of type boolean
         if (expression.getType() != DataType.BOOLEAN) {
-            throw new SemanticException("Condition must be a boolean type");
+            throw new SemanticException(
+                "Condition must be a boolean type" +
+                " (line " + ctx.getStart().getLine() + ")"
+            );
         }
 
         // Traverse statements in the body
@@ -279,7 +312,8 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
     @Override
     public Statement visitDoWhileLoop(LigmaParser.DoWhileLoopContext ctx) {
         log.debug("Do-while loop: {}", ctx.getText());
-        return processLoop(ctx.statement(), ctx.expression(), DoWhileLoop::new);
+        int line = ctx.getStart().getLine();
+        return processLoop(ctx.statement(), ctx.expression(), DoWhileLoop::new, line);
     }
 
     /// Visits a repeat-until loop statement and processes it.
@@ -289,7 +323,8 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
     @Override
     public Statement visitRepeatUntilLoop(LigmaParser.RepeatUntilLoopContext ctx) {
         log.debug("Repeat-until loop: {}", ctx.getText());
-        return processLoop(ctx.statement(), ctx.expression(), RepeatUntilLoop::new);
+        int line = ctx.getStart().getLine();
+        return processLoop(ctx.statement(), ctx.expression(), RepeatUntilLoop::new, line);
     }
 
     /// Processes a loop (either do-while or repeat-until) and validates its condition.
@@ -302,7 +337,8 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
     private Statement processLoop(
         List<LigmaParser.StatementContext> statementCtxList,
         LigmaParser.ExpressionContext expressionCtx,
-        BiFunction<List<Statement>, Expression, Statement> loopConstructor
+        BiFunction<List<Statement>, Expression, Statement> loopConstructor,
+        int line
     ) {
         SymbolTable.enterScope(false);
 
@@ -316,7 +352,10 @@ public class StatementVisitor extends LigmaBaseVisitor<Statement> {
 
         // Validate that the condition is boolean
         if (condition.getType() != DataType.BOOLEAN) {
-            throw new SemanticException("Condition must be a boolean type");
+            throw new SemanticException(
+                "Condition must be a boolean type" +
+                " (line " + line + ")"
+            );
         }
 
         SymbolTable.exitScope();
